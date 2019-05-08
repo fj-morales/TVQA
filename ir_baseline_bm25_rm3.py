@@ -188,7 +188,8 @@ def build_index(index_input, index_loc):
 
 def build_all_indexes(q_data):
     query_id = q_data['qid']
-    
+    query = q_data['q']
+    sub = q_data['located_sub_text']
     answers = [q_data['a' + str(i)] for i in range(0,5)]
     
     print(query_id)
@@ -197,6 +198,10 @@ def build_all_indexes(q_data):
     index_input_file = index_input_dir + str(query_id) + '_trec_input_file'
     
     index_location = all_index_dir + str(query_id) + '_index' 
+    
+    trec_query_file = all_query_files + str(query_id) + 'trec_query_file'
+    
+    trec_sub_file = all_sub_files + str(query_id) +  'trec_sub_file'
     
     print()
     
@@ -218,7 +223,15 @@ def build_all_indexes(q_data):
     
     # build index
     build_index(index_input_dir, index_location)
-
+    
+    # generate query file
+    trec_query = query_to_trec(query_id, query)
+    to_trecfile(trec_query, trec_query_file, compression = 'no')
+    
+    
+    # generate subtitle query file
+    trec_sub = query_to_trec(query_id, sub)
+    to_trecfile(trec_sub, trec_sub_file, compression = 'no')
 
 # In[ ]:
 
@@ -250,7 +263,7 @@ def call_build_index(questions_data):
 # In[ ]:
 
 
-def query_to_trec(q_id, query, filename):
+def query_to_trec(q_id, query):
     q_t = {}
     q_t[q_id] = '<top>\n\n' +         '<num> Number: ' + str(q_id) + '\n' +         '<title> ' + query + '\n\n' +         '<desc> Description:' + '\n\n' +         '<narr> Narrative:' + '\n\n' +         '</top>\n\n'
     return q_t
@@ -704,8 +717,20 @@ def retrieval_model(val_data, train_data):
 
 # In[ ]:
 
+def make_folder(folder):
+    if os.path.exists(folder):
+        shutil.rmtree(folder)
+        os.makedirs(folder)
+    else:
+        os.makedirs(folder)
+
+
+#############
+# MAIN
 
 if __name__ == '__main__':
+    start = datetime.datetime.now()
+    print(start)
     train_file = './data/tvqa_train_processed.json'
     val_file = './data/tvqa_val_processed.json'
     build_index_flag = 'yes'
@@ -743,28 +768,27 @@ if __name__ == '__main__':
 	
     	all_index_dir = workdir + 'index_dirs_val/'
     	all_index_inputs = workdir + 'index_inputs_val/'
+        all_query_files = workdir + 'query_files_val/'
+        all_sub_files = workdir + 'sub_files_val/'
+        
     elif mode == 'test':
         questions_data = processed_data_train
 	
     	all_index_dir = workdir + 'index_dirs_test/'
     	all_index_inputs = workdir + 'index_inputs_test/'
+        all_query_files = workdir + 'query_files_test/'
+        all_sub_files = workdir + 'sub_files_test/'
  
-    if os.path.exists(all_index_dir):
-        shutil.rmtree(all_index_dir)
-        os.makedirs(all_index_dir)
-    else:
-        os.makedirs(all_index_dir)
-        
-    if os.path.exists(all_index_inputs):
-        shutil.rmtree(all_index_inputs)
-        os.makedirs(all_index_inputs)
-    else:
-        os.makedirs(all_index_inputs)
+    make_folder(all_index_dir)
+    make_folder(all_index_inputs)
+    make_folder(all_query_files)
+    make_folder(all_sub_files)
+    
 
     call_build_index(questions_data)
 
     best_model_params_file = './baselines/best_ir_model/tvqa_bm25_rm3_best_model_dev.json'
     
 #     find_best_dev_model(best_model_params_file, n_rand_iter, pool_size)
-
-
+    end = datetime.datetime.now()
+    print(end)
