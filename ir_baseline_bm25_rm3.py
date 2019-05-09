@@ -418,7 +418,7 @@ def baseline_compute(q_data, temp_dir, b,k,N,M,Lambda):
 #     temp_trec_query_file = temp_dir + 'trec_query_file'
     index_location = all_index_dir + str(query_id) + '_index' 
     trec_query_file = all_query_files + str(query_id) + 'trec_query_file'
-    retrieved_doc_file = all_retrieved_files + temp_dir + str(query_id) + '_retrieved_doc_file'
+    retrieved_doc_file = temp_dir + str(query_id) + '_retrieved_doc_file'
     
     
 #     if os.path.exists(temp_dir):
@@ -451,6 +451,11 @@ def baseline_compute(q_data, temp_dir, b,k,N,M,Lambda):
 ####     shutil.rmtree(temp_index_input_dir)
 #     shutil.rmtree(temp_dir)
     
+    try:
+        os.remove(retrieved_doc_file)
+    except OSError:
+        pass
+    
     return predicted_answer_id
 
 
@@ -477,7 +482,11 @@ def evaluate_params(params):
     N = params[2]
     M = params[3]
     Lambda = params[4]
-    temp_dir = uuid.uuid4().hex
+    temp_id = uuid.uuid4().hex
+    temp_dir = all_retrieved_files + temp_id + '/'
+    
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
     
     pred_answers = []
     gold_answers = []
@@ -504,6 +513,12 @@ def evaluate_params(params):
         Lambda,
         float(acc)
     ]
+    temp_file = all_retrieved_files + temp_id + str(int(time.time())) + '.txt'
+    string_print = 'task: ' + temp_id + ' finished!'
+    with open(temp_file, 'wt') as task_file:
+        task_file.write(string_print)
+    
+    shutil.rmtree(temp_dir)    
     
     return results
 
@@ -675,7 +690,7 @@ def retrieval_model(val_data, train_data):
         
         if j%1000 == 0:
             print('processed: ', j)
-#         gold_answers.append(item['answer_idx'])
+#         gold_answers.ac d wo  ppend(item['answer_idx'])
 #         predicted_answers.append(related_docs_indices[0])
     return [predicted_answers, gold_answers]
 
@@ -718,10 +733,10 @@ if __name__ == "__main__":
 #     n_rand_iter = 5000
     
     
-    dev_file = sys.args[1] # './data/tvqa_new_dev_processed.json' # Original train data was split in new_train, new_dev
-    data_split = sys.args[2] # 'dev'
-    n_rand_iter = sys.args[3] # 5000
-    pool_size = sys.args[4] # 20
+    dev_file = sys.argv[1] # './data/tvqa_new_dev_processed.json' # Original train data was split in new_train, new_dev
+    data_split = sys.argv[2] # 'dev'
+    n_rand_iter = int(sys.argv[3]) # 5000
+    pool_size = int(sys.argv[4]) # 20
     
     
     with open(dev_file, 'r') as f:
@@ -731,7 +746,7 @@ if __name__ == "__main__":
         processed_data_test = json.load(f)
     
     # Options
-    data_split = 'dev'
+#     data_split = 'dev'
     model_type = 'qa'
 #     model_type = 'sa'
 #     model_type = 'retrieval'
@@ -764,7 +779,7 @@ if __name__ == "__main__":
 
     
     
-#    questions_data = questions_data[0:10]
+#     questions_data = questions_data[0:10]
     call_build_index(questions_data)
 
     best_model_params_file = './baselines/best_ir_model/tvqa_bm25_rm3_best_model_dev.json'
