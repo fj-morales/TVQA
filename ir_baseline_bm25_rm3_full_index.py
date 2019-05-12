@@ -487,7 +487,7 @@ if __name__ == "__main__":
     all_index_dir = workdir + 'index_dirs_' + data_split + '/'
     all_index_inputs = workdir + 'index_inputs_' + data_split + '/'
     all_query_files = workdir + 'query_files_' + data_split + '/'
-    all_sub_files = workdir + 'sub_files_dev' + data_split + '/'
+    all_sub_files = workdir + 'sub_files' + data_split + '/'
     all_retrieved_files = workdir + 'retrieved_files' + data_split + '/'
     
     make_folder(all_index_inputs)
