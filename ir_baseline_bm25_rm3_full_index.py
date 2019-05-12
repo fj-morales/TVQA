@@ -479,7 +479,7 @@ if __name__ == "__main__":
     
     #########
     
-    q_data = q_data[0:20]
+#     q_data = q_data[0:20]
     
     #########
     
