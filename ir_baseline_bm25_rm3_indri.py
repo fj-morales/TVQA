@@ -280,7 +280,7 @@ def retrieve_docs(q_topics_file, retrieved_docs_file, index_loc, hits, b=0.2, k=
     baseline = '-baseline=okapi,b:' + str(b) + ',k1:' + str(k)
     N_val = '-fbDocs=' + str(N)
     M_val = '-fbTerms=' + str(M)
-    threads_val = '-threads=' + str(10)
+    threads_val = '-threads=' + str(12)
     Lambda_val = '-fbOrigWeight=' + str(Lambda)
     q_topics_file = os.path.realpath(q_topics_file)
     toolkit_search = toolkit_loc + 'bin/IndriRunQuery'
@@ -625,7 +625,7 @@ if __name__ == "__main__":
     
     #########
     
-#     q_data = q_data[0:100]
+#    q_data = q_data[0:100]
     
     #########
     
@@ -649,7 +649,7 @@ if __name__ == "__main__":
 #     index_input_file = all_index_inputs + 'index_input_file_' + data_split
 #     [trec_answers, ids_equiv] = answers_to_trec(q_data_all) # Use all data instead the data split
 #     to_trecfile(trec_answers, index_input_file, compression = 'no')
-    all_data_to_index_input(data_files_list)
+#     all_data_to_index_input(data_files_list)
     
     
     # Convert all questions / subtitles to one trec topics file 
@@ -685,6 +685,7 @@ if __name__ == "__main__":
 #     if data_split == 'dev':
 #         find_best_model()
     best_model_params_file = best_model_dir + 'tvqa' + '_bm25_rm3_best_model_dev.json'
+    
 #     params = [1,1,1,1,1]
 #     evaluate_params(params)
     
