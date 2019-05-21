@@ -115,6 +115,7 @@ def answers_to_trec(q_data):
 
 
 def to_trecfile(docs, filename, compression = 'yes', query=False):
+    
     print('Trying to save file: ', filename)
 #     print(len(docs))
     
@@ -277,7 +278,8 @@ def retrieve_docs(q_topics_file, retrieved_docs_file, index_loc, hits, b=0.2, k=
     index_param = '-index='+ os.path.realpath(index_loc)
 #     print(index_param)
     count = '-count=' + str(hits)
-    baseline = '-baseline=okapi,b:' + str(b) + ',k1:' + str(k)
+#     baseline = '-baseline=okapi,b:' + str(b) + ',k1:' + str(k)
+    baseline = '-baseline=okapi'
     N_val = '-fbDocs=' + str(N)
     M_val = '-fbTerms=' + str(M)
     threads_val = '-threads=' + str(12)
@@ -292,9 +294,9 @@ def retrieve_docs(q_topics_file, retrieved_docs_file, index_loc, hits, b=0.2, k=
                count,
                '-trecFormat=true',
                baseline,
-                N_val,
-                M_val,
-                Lambda_val,
+#                 N_val,
+#                 M_val,
+#                 Lambda_val,
                 threads_val
                ]
     print(command)
@@ -404,75 +406,18 @@ def load_predictions(retrieved_docs_file):
 # In[36]:
 
 
-# def evaluate_params(params):
-#     b = params[0]
-#     k = params[1]
-#     N = params[2]
-#     M = params[3]
-#     Lambda = params[4]
+def evaluate_params(params):
+    b = params[0]
+    k = params[1]
+    N = params[2]
+    M = params[3]
+    Lambda = params[4]
     
-#     params_suffix = 'b' + str(b) + 'k' + str(k) + 'N' + str(N) + 'M' + str(M) + 'Lambda' + str(Lambda) + 'n_rand_iter' + str(n_rand_iter) + 'hits' + str(hits)
-#     retrieved_docs_file = all_retrieved_files + 'run_bm25_rm3_preds_' + 'tvqa' + '_' + data_split + '_' + params_suffix + '.txt'
-    
-# ####    retrieve_docs(q_topics_file, retrieved_docs_file, all_index_dir, hits, b, k, N, M, Lambda)
-#     retrieve_docs(q_topics_file, retrieved_docs_file, index_loc, hits, b, k, N, M, Lambda)
-    
-#     [pred_answers, gold_answers] = load_predictions(retrieved_docs_file)
-    
-#     temp_id = uuid.uuid4().hex
-#     temp_dir = all_retrieved_files + temp_id + '/'
-    
-#     if not os.path.exists(temp_dir):
-#         os.makedirs(temp_dir)
-    
-# #     pred_answers = []
-# #     gold_answers = []
-# #     for item in questions_data:
-# #         answers = [item['a' + str(i)] for i in range(0,5)]
-# #         if model_type == 'qa':
-# #             q_data = [item['qid'], item['q'], answers]
-# #         elif model_type == 'sa':
-# #             q_data = [item['qid'], item['q'], answers]
-# #         elif model_type == 'retrieval':
-# #             print('Retrieval model to be built...')
-# # #             q_data = [item['qid'], item['q'], answers]
-
-# #         predicted_answer_id = baseline_compute(q_data, temp_dir, b,k,N,M,Lambda)
-# #         pred_answers.append(int(predicted_answer_id))
-# #         gold_answers.append(int(item['answer_idx']))
-    
-#     acc = evaluate(pred_answers, gold_answers)
-#     results = [
-#         b,
-#         k,
-#         N,
-#         M,
-#         Lambda,
-#         float(acc)
-#     ]
-#     temp_file = all_retrieved_files + temp_id + str(int(time.time())) + '.txt'
-#     string_print = 'task: ' + temp_id + ' finished!\n'
-#     with open(temp_file, 'wt') as task_file:
-#         task_file.write(string_print)
-#         task_file.write(json.dumps(results, indent=4))
-    
-# #     shutil.rmtree(temp_dir)    
-    
-#     return results
-
-
-def evaluate_params(retrieved_docs_file):
-#     b = params[0]
-#     k = params[1]
-#     N = params[2]
-#     M = params[3]
-#     Lambda = params[4]
-    
-#     params_suffix = 'b' + str(b) + 'k' + str(k) + 'N' + str(N) + 'M' + str(M) + 'Lambda' + str(Lambda) + 'n_rand_iter' + str(n_rand_iter) + 'hits' + str(hits)
-#     retrieved_docs_file = all_retrieved_files + 'run_bm25_rm3_preds_' + 'tvqa' + '_' + data_split + '_' + params_suffix + '.txt'
+    params_suffix = 'b' + str(b) + 'k' + str(k) + 'N' + str(N) + 'M' + str(M) + 'Lambda' + str(Lambda) + 'n_rand_iter' + str(n_rand_iter) + 'hits' + str(hits)
+    retrieved_docs_file = all_retrieved_files + 'run_bm25_rm3_preds_' + 'tvqa' + '_' + data_split + '_' + params_suffix + '.txt'
     
 ####    retrieve_docs(q_topics_file, retrieved_docs_file, all_index_dir, hits, b, k, N, M, Lambda)
-   # retrieve_docs(q_topics_file, retrieved_docs_file, index_loc, hits, b, k, N, M, Lambda)
+    retrieve_docs(q_topics_file, retrieved_docs_file, index_loc, hits, b, k, N, M, Lambda)
     
     [pred_answers, gold_answers] = load_predictions(retrieved_docs_file)
     
@@ -498,17 +443,6 @@ def evaluate_params(retrieved_docs_file):
 #         pred_answers.append(int(predicted_answer_id))
 #         gold_answers.append(int(item['answer_idx']))
     
-    b = re.findall("b[0-9].[0-9]*", retrieved_docs_file)[0].strip('b')
-#     print(b)
-    k = re.findall("k[0-9].[0-9]*", retrieved_docs_file)[0].strip('k')
-#     print(k)
-    N = re.findall("N[0-9]*", retrieved_docs_file)[0].strip('N')
-#     print(N)
-    M = re.findall("M[0-9]*", retrieved_docs_file)[0].strip('M')
-#     print(M)
-    Lambda = re.findall("Lambda[0-9].[0-9]", retrieved_docs_file)[0].strip('Lambda')
-#     print(Lambda)
-    
     acc = evaluate(pred_answers, gold_answers)
     results = [
         b,
@@ -524,10 +458,78 @@ def evaluate_params(retrieved_docs_file):
         task_file.write(string_print)
         task_file.write(json.dumps(results, indent=4))
     
-#     shutil.rmtree(temp_dir) 
-#     print(retrieved_docs_file)
-#     print(results)
+#     shutil.rmtree(temp_dir)    
+    
     return results
+
+
+# def evaluate_params(retrieved_docs_file):
+# #     b = params[0]
+# #     k = params[1]
+# #     N = params[2]
+# #     M = params[3]
+# #     Lambda = params[4]
+    
+# #     params_suffix = 'b' + str(b) + 'k' + str(k) + 'N' + str(N) + 'M' + str(M) + 'Lambda' + str(Lambda) + 'n_rand_iter' + str(n_rand_iter) + 'hits' + str(hits)
+# #     retrieved_docs_file = all_retrieved_files + 'run_bm25_rm3_preds_' + 'tvqa' + '_' + data_split + '_' + params_suffix + '.txt'
+    
+# ####    retrieve_docs(q_topics_file, retrieved_docs_file, all_index_dir, hits, b, k, N, M, Lambda)
+#    # retrieve_docs(q_topics_file, retrieved_docs_file, index_loc, hits, b, k, N, M, Lambda)
+    
+#     [pred_answers, gold_answers] = load_predictions(retrieved_docs_file)
+    
+#     temp_id = uuid.uuid4().hex
+#     temp_dir = all_retrieved_files + temp_id + '/'
+    
+#     if not os.path.exists(temp_dir):
+#         os.makedirs(temp_dir)
+    
+# #     pred_answers = []
+# #     gold_answers = []
+# #     for item in questions_data:
+# #         answers = [item['a' + str(i)] for i in range(0,5)]
+# #         if model_type == 'qa':
+# #             q_data = [item['qid'], item['q'], answers]
+# #         elif model_type == 'sa':
+# #             q_data = [item['qid'], item['q'], answers]
+# #         elif model_type == 'retrieval':
+# #             print('Retrieval model to be built...')
+# # #             q_data = [item['qid'], item['q'], answers]
+
+# #         predicted_answer_id = baseline_compute(q_data, temp_dir, b,k,N,M,Lambda)
+# #         pred_answers.append(int(predicted_answer_id))
+# #         gold_answers.append(int(item['answer_idx']))
+    
+#     b = re.findall("b[0-9].[0-9]*", retrieved_docs_file)[0].strip('b')
+# #     print(b)
+#     k = re.findall("k[0-9].[0-9]*", retrieved_docs_file)[0].strip('k')
+# #     print(k)
+#     N = re.findall("N[0-9]*", retrieved_docs_file)[0].strip('N')
+# #     print(N)
+#     M = re.findall("M[0-9]*", retrieved_docs_file)[0].strip('M')
+# #     print(M)
+#     Lambda = re.findall("Lambda[0-9].[0-9]", retrieved_docs_file)[0].strip('Lambda')
+# #     print(Lambda)
+    
+#     acc = evaluate(pred_answers, gold_answers)
+#     results = [
+#         b,
+#         k,
+#         N,
+#         M,
+#         Lambda,
+#         float(acc)
+#     ]
+#     temp_file = all_retrieved_files + temp_id + str(int(time.time())) + '.txt'
+#     string_print = 'task: ' + temp_id + ' finished!\n'
+#     with open(temp_file, 'wt') as task_file:
+#         task_file.write(string_print)
+#         task_file.write(json.dumps(results, indent=4))
+    
+# #     shutil.rmtree(temp_dir) 
+# #     print(retrieved_docs_file)
+# #     print(results)
+#     return results
 
 
 # In[13]:
@@ -640,7 +642,7 @@ def get_random_params(hyper_params, num_iter):
 
 def find_best_dev_model(best_model_params_file, n_rand_iter, pool_size):
 #     random_search = 'yes'
-#     make_folder(all_retrieved_files)
+    make_folder(all_retrieved_files)
     if random_search == 'yes':
         ## Heavy random search
         brange = np.arange(0.1,1,0.05)
@@ -800,8 +802,8 @@ if __name__ == "__main__":
     best_model_dir = workdir + 'best_ir_model/'
     
 #     make_folder(all_index_inputs)
-#     make_folder(all_query_files)
-#     make_folder(all_sub_files)
+    make_folder(all_query_files)
+    make_folder(all_sub_files)
 #     make_folder(all_index_dir)
 #     make_folder(best_model_dir)
     
@@ -816,7 +818,7 @@ if __name__ == "__main__":
     
     # Convert all questions / subtitles to one trec topics file 
     
-    query_topics_file = all_query_files + 'query_indri_file_' + data_split
+#     query_topics_file = all_query_files + 'query_indri_file_' + data_split
 #     q_data_to_trec_file(q_data, query_topics_file, q_or_s = 'q')
     
     subtitles_topics_file = all_query_files + 'subtitle_indri_query_file_' + data_split
@@ -844,20 +846,27 @@ if __name__ == "__main__":
 #     print('type gold: ', type(gold_answers_dict.keys()[0]))
     
     # Pick best model according to accuracy
-#     if data_split == 'dev':
-#         find_best_model()
     best_model_params_file = best_model_dir + 'tvqa' + '_bm25_rm3_best_model_dev.json'
-    
-#     params = [1,1,1,1,1]
-#     evaluate_params(params)
-###     retrieved_docs_file = './workdir6/retrieved_files_dev/run_bm25_rm3_preds_tvqa_dev_b0.45k1.5N275.0M134.0Lambda0.9n_rand_iter500hits1.txt'
-  ##  print(evaluate_params(retrieved_docs_file))
-    find_best_dev_model(best_model_params_file, n_rand_iter, pool_size)
-    
-#     print(q_data[0])
-    
-    # Test on test set
-#     if data_split == 'test':
-#         evaluate_model()
+    if data_split == 'dev':
+
+        find_best_dev_model(best_model_params_file, n_rand_iter, pool_size)
+    if data_split == 'test':
+        # Test on test set
+        make_folder(all_retrieved_files)
+        if os.path.exists(best_model_params_file):
+            with open(best_model_params_file, 'rt') as best_p_f:
+                best_dev_params = json.load(best_p_f)
+                b = best_dev_params['b']
+                k = best_dev_params['k']
+                N = best_dev_params['N']
+                M = best_dev_params['M']
+                Lambda = best_dev_params['Lambda']
+                
+                params = [b, k, N, M, Lambda]
+                
+                test_results = evaluate_params(params)
+                
+                print("Test results: ", test_results)
+
     
 

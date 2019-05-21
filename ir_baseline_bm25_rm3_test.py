@@ -271,14 +271,13 @@ def call_build_index(questions_data):
     pool_outputs = pool.map_async(build_all_indexes, questions_data)
 
     pool.close() # no more tasks
-    while (True):
-        if (pool_outputs.ready()): break
-        remaining = pool_outputs._number_left
-#         remaining2 = remaining1
-#         remaining1 = pool_outputs._number_left
-        if remaining%10 == 0:
-            print("Waiting for", remaining, "tasks to complete...")
-            time.sleep(2)
+#     while (True):
+#         if (pool_outputs.ready()): break
+#         remaining = pool_outputs._number_left
+        
+#         if remaining%10 == 0:
+#             print("Waiting for", remaining, "tasks to complete...")
+#             time.sleep(2)
         
       
     pool.join()  # wrap up current tasks
@@ -350,6 +349,7 @@ def retrieve_docs(q_topics_file, retrieved_docs_file, index_loc, hits, b=0.2, k=
                 'Trec',
                 '-index',
                 index_loc,
+                '-inmem',
                 '-topics',
                 q_topics_file,
                 '-output',
@@ -475,6 +475,11 @@ def evaluate(predicted_answers, gold_answers):
 
 # In[12]:
 
+def progress_to_file(text, filename):
+    with open(filename, 'a') as task_file:
+        time_string = str(datetime.datetime.now())
+        print_text = time_string + ': ' + text
+        task_file.write(print_text + '\n')
 
 def evaluate_params(params):
     b = params[0]
@@ -484,12 +489,14 @@ def evaluate_params(params):
     Lambda = params[4]
     temp_id = uuid.uuid4().hex
     temp_dir = all_retrieved_files + temp_id + '/'
+    temp_file = all_retrieved_files + temp_id + str(int(time.time())) + '.txt'
     
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir)
     
     pred_answers = []
     gold_answers = []
+    j = 0
     for item in questions_data:
         answers = [item['a' + str(i)] for i in range(0,5)]
         if model_type == 'qa':
@@ -503,7 +510,10 @@ def evaluate_params(params):
         predicted_answer_id = baseline_compute(q_data, temp_dir, b,k,N,M,Lambda)
         pred_answers.append(int(predicted_answer_id))
         gold_answers.append(int(item['answer_idx']))
-    
+        if j%100 == 0:
+            progress_text ='Queries processed: ' + str(j)
+            progress_to_file(progress_text, temp_file)
+        j +=1
     acc = evaluate(pred_answers, gold_answers)
     results = [
         b,
@@ -513,11 +523,11 @@ def evaluate_params(params):
         Lambda,
         float(acc)
     ]
-    temp_file = all_retrieved_files + temp_id + str(int(time.time())) + '.txt'
+    
     string_print = 'task: ' + temp_id + ' finished!\n'
-    with open(temp_file, 'wt') as task_file:
-        task_file.write(string_print)
-        task_file.write(json.dumps(results, indent=4))
+    
+    progress_to_file(string_print, temp_file)
+    progress_to_file(json.dumps(results), temp_file)
     
     shutil.rmtree(temp_dir)    
     
@@ -528,7 +538,8 @@ def evaluate_params(params):
 
 
 def start_process():
-    print( 'Starting', multiprocessing.current_process().name)
+    return
+#     print( 'Starting', multiprocessing.current_process().name)
 
 
 # In[14]:
@@ -605,14 +616,13 @@ def find_best_dev_model(best_model_params_file, n_rand_iter, pool_size):
     
     
     pool.close() # no more tasks
-    while (True):
-        if (pool_outputs.ready()): break
-        remaining = pool_outputs._number_left
-#         remaining2 = remaining1
-#         remaining1 = pool_outputs._number_left
-        if remaining%10 == 0:
-            print("Waiting for", remaining, "tasks to complete...")
-            time.sleep(2)
+#     while (True):
+#         if (pool_outputs.ready()): break
+#         remaining = pool_outputs._number_left
+
+#         if remaining%10 == 0:
+#             print("Waiting for", remaining, "tasks to complete...")
+#             time.sleep(2)
         
       
     pool.join()  # wrap up current tasks
@@ -726,7 +736,7 @@ if __name__ == "__main__":
     test_file = './data/tvqa_val_processed.json' # Val is being used as test!
     build_index_flag = 'yes'
     random_search = 'yes'
-    workdir = './workdir/'
+    workdir = './workdir2/'
     
     hits = 1
     
@@ -780,7 +790,7 @@ if __name__ == "__main__":
 
     
     
-    #questions_data = questions_data[0:10]
+    questions_data = questions_data[0:500]
     call_build_index(questions_data)
 
     best_model_params_file = './baselines/best_ir_model/tvqa_bm25_rm3_best_model_dev.json'

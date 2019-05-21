@@ -98,7 +98,17 @@ def to_trecfile(docs, filename, compression = 'yes'):
                 for key, value in doc.items():
                     f_out.write(value)
 
+def all_data_to_index_input(data_files_list):
+    q_data_all = all_data_load(data_files_list)
+    index_input_file = all_index_inputs + 'index_input_file_' + data_split
+    [trec_answers, ids_equiv] = answers_to_trec(q_data_all) # Use all data instead the data split
+    to_trecfile(trec_answers, index_input_file, compression = 'no')
 
+    
+def q_data_to_trec_file(q_data, filename, q_or_s):
+    trec_topics_queries = topics_to_trec(q_data, q_or_s)
+    to_trecfile(trec_topics_queries, filename, compression = 'no')
+    
 def topic_to_trec(q_id, query):
     q_t = {}
     q_t[q_id] = '<top>\n\n' +         '<num> Number: ' + str(q_id) + '\n' +         '<title> ' + query + '\n\n' +         '<desc> Description:' + '\n\n' +         '<narr> Narrative:' + '\n\n' +         '</top>\n\n'
@@ -417,7 +427,7 @@ def find_best_dev_model(best_model_params_file, n_rand_iter, pool_size):
       
     pool.join()  # wrap up current tasks
     pool_outputs.get()
-    params_file = './baselines/best_ir_model/' + 'tvqa' + '_' + 'bm25_rm3_' + data_split + '_hparams.pickle'
+    params_file = best_model_dir + 'tvqa' + '_' + 'bm25_rm3_dev_hparams.pickle'
     pickle.dump(pool_outputs.get(), open(params_file, "wb" ) )
     print('Total parameters tested: ' + str(len(pool_outputs.get())))
     best_model_params = max(pool_outputs.get(), key=lambda x: x[5])
@@ -464,7 +474,7 @@ if __name__ == "__main__":
     
     build_index_flag = 'yes'
     
-    workdir = './workdir3/'
+    workdir = './workdir/'
     if not os.path.exists(workdir):
         os.makedirs(workdir)
     
@@ -472,7 +482,7 @@ if __name__ == "__main__":
     anserini_loc = '../anserini/'
     
     
-    q_data_all = all_data_load(data_files_list)
+#     q_data_all = all_data_load(data_files_list)
     
     q_data = load_json(input_file)
     
@@ -489,28 +499,30 @@ if __name__ == "__main__":
     all_query_files = workdir + 'query_files_' + data_split + '/'
     all_sub_files = workdir + 'sub_files' + data_split + '/'
     all_retrieved_files = workdir + 'retrieved_files' + data_split + '/'
+    best_model_dir = workdir + 'best_ir_model/'
     
     make_folder(all_index_inputs)
     make_folder(all_query_files)
     make_folder(all_sub_files)
     make_folder(all_index_dir)
+    make_folder(best_model_dir)
     
     # Convert answers to one index_inpu_trec_doc_file
     # Save the index numbering equivalences (newid = queryid_a0, queryid_a1, ...)
     
-    index_input_file = all_index_inputs + 'index_input_file_' + data_split
-    [trec_answers, ids_equiv] = answers_to_trec(q_data_all) # Use all data instead the data split
-    to_trecfile(trec_answers, index_input_file, compression = 'no')
+#     index_input_file = all_index_inputs + 'index_input_file_' + data_split
+#     [trec_answers, ids_equiv] = answers_to_trec(q_data_all) # Use all data instead the data split
+#     to_trecfile(trec_answers, index_input_file, compression = 'no')
+    all_data_to_index_input(data_files_list)
+    
     
     # Convert all questions / subtitles to one trec topics file 
-    trec_topics_queries = topics_to_trec(q_data, q_or_s = 'q')
-    query_topics_file = all_query_files + 'query_file_' + data_split
-    to_trecfile(trec_topics_queries, query_topics_file, compression = 'no')
     
-    trec_topics_subtitles = topics_to_trec(q_data, q_or_s = 's')
+    query_topics_file = all_query_files + 'query_file_' + data_split
+    q_data_to_trec_file(q_data, query_topics_file, q_or_s = 'q')
     
     subtitles_topics_file = all_query_files + 'subtitle_topics_file_' + data_split
-    to_trecfile(trec_topics_subtitles, subtitles_topics_file, compression = 'no')
+    q_data_to_trec_file(q_data, subtitles_topics_file, q_or_s = 's')
     
     # Build index, single process
     build_index(all_index_inputs, all_index_dir)
@@ -535,7 +547,7 @@ if __name__ == "__main__":
     # Pick best model according to accuracy
 #     if data_split == 'dev':
 #         find_best_model()
-    best_model_params_file = './baselines/best_ir_model/' + 'tvqa' + '_bm25_rm3_best_model_dev.json'
+    best_model_params_file = best_model_dir + 'tvqa' + '_bm25_rm3_best_model_dev.json'
 #     params = [1,1,1,1,1]
 #     evaluate_params(params)
     
