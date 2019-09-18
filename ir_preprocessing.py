@@ -206,7 +206,7 @@ if __name__ == "__main__":
     
     
     to_index_input = workdir + 'index_inputs/'
-    index_dir = workdir + 'index_dirs/'
+    index_dir = workdir + 'index_dir/'
     all_query_files = workdir + 'query_files/'
     all_sub_files = workdir + 'sub_files/'
     all_retrieved_files = workdir + 'retrieved_files/'

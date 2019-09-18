@@ -13,37 +13,30 @@ import sys
 
 import argparse
 
-## My libraries
+from ir_utils import *
 
-import eval_utils
-import utils
-import bioasq_corpus_parser
-import robust_corpus_parser
-# import bioasq_query_parser
-import query_parser
-# from utils import *
+## My libraries
 
 
 # In[ ]:
 
 
 class Index:
-    def __init__(self, ir_toolkit_location, index_dir, parameter_file_location, stopwords_file):
+    def __init__(self, ir_toolkit_location, index_dir, parameter_file_location):
         self.ir_toolkit_location = ir_toolkit_location
         self.parameter_file_location = parameter_file_location
         self.index_dir = index_dir
-        self.stopwords_file = stopwords_file
+#         self.stopwords_file = stopwords_file
 #     def build(self, ir_tool_params):
     def build(self):
         
-#         utils.create_dir(self.index_location)
     #     index_loc_param = '--indexPath=' + index_loc
-        utils.create_dir(self.index_dir)
+        create_dir(self.index_dir)
         build_index_command = self.ir_toolkit_location + 'buildindex/IndriBuildIndex'
         toolkit_parameters = [
                                 build_index_command,
-                                self.parameter_file_location,
-                                self.stopwords_file
+                                self.parameter_file_location
+#                                 self.stopwords_file
                                 ]
 
         print(toolkit_parameters)
@@ -68,57 +61,28 @@ class fakeParser:
 if __name__ == "__main__":
     
     
-# #     ir_toolkit_location = sys.argv[1] # '../indri/'
 
 #     # create dataset files dir
     
-    parser = argparse.ArgumentParser(description='Example 1 - sequential and local execution.')
-    parser.add_argument('--preprocess', action='store_true')
-    parser.add_argument('--dataset',   type=str, help='')
-    parser.add_argument('--pool_size', type=int, help='')
+#     parser = argparse.ArgumentParser(description='Example 1 - sequential and local execution.')
+#     parser.add_argument('--preprocess', action='store_true')
+#     parser.add_argument('--dataset',   type=str, help='')
+#     parser.add_argument('--pool_size', type=int, help='')
     
-    args=parser.parse_args()
+#     args=parser.parse_args()
 #     args = fakeParser()
     
-    dataset = args.dataset
-    workdir = './' + dataset + '_dir/'
-    confdir = './' + dataset + '_config/'
-    if not os.path.exists(workdir):
-        os.makedirs(workdir)
+    
+    ir_toolkit_location = '../indri-l2r/'
+    workdir = './workdir/'
+    confdir = './tvqa_config/'
 
-    
-#     # generate corpus files to index
-    
-#     pool_size = 40 # scales very well when server is not used
-#     # Get all filenames
-    
-#     # Options
-#     data_dir = '/ssd/francisco/pubmed19-test/'
-    if args.dataset == 'robust':
-        data_dir = '/ssd/francisco/deep-relevance-ranking/robust04_data/collection/'
-    elif args.dataset == 'bioasq':
-        data_dir = '/ssd/francisco/pubmed19/'
-        
-    
-    
-    
-    to_index_dir =  workdir + dataset + '_corpus/'
-    index_dir = workdir + dataset + '_indri_index'
+    to_index_input = workdir + 'index_inputs/'
+    index_dir = workdir + 'index_dir/'
 
-    ir_toolkit_location = '../../../indri-l2r/'
-    trec_eval_command = '../../eval/trec_eval'
-    parameter_file_location = confdir + dataset + '_index_param_file'
-    stopwords_file = confdir + 'stopwords'
-    
-    # Parse Pubmed (BioASQ) dataset
-    if args.preprocess:
-        print('Preprocessing corpus...')
-        if args.dataset == 'bioasq':
-            bioasq_corpus_parser.corpus_parser(data_dir, to_index_dir, args.pool_size) # time consuming
-        
-        ### Robust corpus does not require to apply corpus preprocessing!!
+    parameter_file_location = confdir + 'tvqa_index_param_file'
 
-    index_data = Index(ir_toolkit_location, index_dir, parameter_file_location, stopwords_file)
+    index_data = Index(ir_toolkit_location, index_dir, parameter_file_location)
     print('Indexing')
     index_data.build() # time consuming
 
