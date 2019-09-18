@@ -115,7 +115,7 @@ def answers_to_trec(q_data):
 
 
 def to_trecfile(docs, filename, compression = 'yes', query=False):
-    print('Trying to save file: ', filename)
+    print('Saving file: ', filename)
 #     print(len(docs))
     
     if compression == 'yes':
@@ -260,7 +260,7 @@ def build_index(index_input, index_loc):
 #                           index_loc]
 
 
-#     print(toolkit_parameters)
+    print(toolkit_parameters)
 
     index_proc = subprocess.Popen(toolkit_parameters,
             stdout=subprocess.PIPE, shell=False)
@@ -750,25 +750,26 @@ if __name__ == "__main__":
     val_file = './data/tvqa_val_processed.json'
     test_file = './data/tvqa_test_public_processed.json'
     
-    data_files_list = [train_file, val_file, test_file]
+#     data_files_list = [train_file, val_file, test_file]
+    data_files_list = [train_file]
     
-    input_file = sys.argv[1] # './data/tvqa_new_dev_processed.json'
-    data_split = str(sys.argv[2]) # 'dev'
-    n_rand_iter = int(sys.argv[3]) # 5000
-    pool_size = int(sys.argv[4]) # 20
-    model_type = str(sys.argv[5])# q(uestion) / s(ubtitle)
+#     input_file = sys.argv[1] # './data/tvqa_new_dev_processed.json'
+#     data_split = str(sys.argv[2]) # 'dev'
+#     n_rand_iter = int(sys.argv[3]) # 5000
+#     pool_size = int(sys.argv[4]) # 20
+#     model_type = str(sys.argv[5])# q(uestion) / s(ubtitle)
     
     
-#     input_file ='./data/tvqa_new_dev_processed.json'
-#     data_split = 'dev'
-#     n_rand_iter = 1
-#     pool_size = 1
-#     model_type = 's'
+    input_file ='./data/tvqa_new_dev_processed.json'
+    data_split = 'dev'
+    n_rand_iter = 1
+    pool_size = 1
+    model_type = 's'
     
     
     build_index_flag = 'yes'
     
-    workdir = './workdir5/'
+    workdir = './workdir6/'
     
     all_data_ids_equiv_file = workdir + 'all_data_ids_equiv.json'
     inverted_ids_file = workdir + 'ids_equiv.json' 
@@ -780,7 +781,7 @@ if __name__ == "__main__":
     toolkit_loc = '../indri/'
     
     
-#     q_data_all = all_data_load(data_files_list)
+    q_data_all = all_data_load(data_files_list)
     
     q_data = load_json(input_file)
     
@@ -808,10 +809,10 @@ if __name__ == "__main__":
     # Convert answers to one index_inpu_trec_doc_file
     # Save the index numbering equivalences (newid = queryid_a0, queryid_a1, ...)
     
-#     index_input_file = all_index_inputs + 'index_input_file_' + data_split
-#     [trec_answers, ids_equiv] = answers_to_trec(q_data_all) # Use all data instead the data split
-#     to_trecfile(trec_answers, index_input_file, compression = 'no')
-#     all_data_to_index_input(data_files_list)
+    index_input_file = all_index_inputs + 'index_input_file_' + data_split
+    [trec_answers, ids_equiv] = answers_to_trec(q_data_all) # Use all data instead the data split
+    to_trecfile(trec_answers, index_input_file, compression = 'no')
+    all_data_to_index_input(data_files_list)
     
     
     # Convert all questions / subtitles to one trec topics file 
@@ -824,40 +825,40 @@ if __name__ == "__main__":
     
     # Build index, single process
     ##
-    ## build_index(all_index_inputs, all_index_dir)
+    build_index(all_index_inputs, all_index_dir)
     
-    # Retrieve 1 (most relevant) answer/doc per question - multiprocessing 5000
+#     # Retrieve 1 (most relevant) answer/doc per question - multiprocessing 5000
     
-    if model_type == 'q':
-        print('Model type: question-answer')
-        q_topics_file = query_topics_file
-    elif model_type == 's':
-        print('Model type: subtitle-answer')
-        q_topics_file = subtitles_topics_file
+# #     if model_type == 'q':
+# #         print('Model type: question-answer')
+# #         q_topics_file = query_topics_file
+# #     elif model_type == 's':
+# #         print('Model type: subtitle-answer')
+# #         q_topics_file = subtitles_topics_file
         
     
-    # Global gold answers list
-    gold_answers_dict = {}
-    for q in  q_data:
-        gold_answers_dict[str(q['qid'])] = q['answer_idx']
+# #     # Global gold answers list
+# #     gold_answers_dict = {}
+# #     for q in  q_data:
+# #         gold_answers_dict[str(q['qid'])] = q['answer_idx']
 
-#     print('type gold: ', type(gold_answers_dict.keys()[0]))
+# # #     print('type gold: ', type(gold_answers_dict.keys()[0]))
     
-    # Pick best model according to accuracy
-#     if data_split == 'dev':
-#         find_best_model()
-    best_model_params_file = best_model_dir + 'tvqa' + '_bm25_rm3_best_model_dev.json'
+# #     # Pick best model according to accuracy
+# # #     if data_split == 'dev':
+# # #         find_best_model()
+# #     best_model_params_file = best_model_dir + 'tvqa' + '_bm25_rm3_best_model_dev.json'
     
-#     params = [1,1,1,1,1]
-#     evaluate_params(params)
-###     retrieved_docs_file = './workdir6/retrieved_files_dev/run_bm25_rm3_preds_tvqa_dev_b0.45k1.5N275.0M134.0Lambda0.9n_rand_iter500hits1.txt'
-  ##  print(evaluate_params(retrieved_docs_file))
-    find_best_dev_model(best_model_params_file, n_rand_iter, pool_size)
+# # #     params = [1,1,1,1,1]
+# # #     evaluate_params(params)
+# # ###     retrieved_docs_file = './workdir6/retrieved_files_dev/run_bm25_rm3_preds_tvqa_dev_b0.45k1.5N275.0M134.0Lambda0.9n_rand_iter500hits1.txt'
+# #   ##  print(evaluate_params(retrieved_docs_file))
+# #     find_best_dev_model(best_model_params_file, n_rand_iter, pool_size)
     
-#     print(q_data[0])
+# # #     print(q_data[0])
     
-    # Test on test set
-#     if data_split == 'test':
-#         evaluate_model()
+# #     # Test on test set
+# # #     if data_split == 'test':
+# # #         evaluate_model()
     
 

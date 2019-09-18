@@ -416,6 +416,7 @@ def evaluate_params(params):
     params_suffix = 'b' + str(b) + 'k' + str(k) + 'N' + str(N) + 'M' + str(M) + 'Lambda' + str(Lambda) + 'n_rand_iter' + str(n_rand_iter) + 'hits' + str(hits)
     retrieved_docs_file = all_retrieved_files + 'run_bm25_rm3_preds_' + 'tvqa' + '_' + data_split + '_' + params_suffix + '.txt'
     
+    if os 
 ####    retrieve_docs(q_topics_file, retrieved_docs_file, all_index_dir, hits, b, k, N, M, Lambda)
     retrieve_docs(q_topics_file, retrieved_docs_file, index_loc, hits, b, k, N, M, Lambda)
     
