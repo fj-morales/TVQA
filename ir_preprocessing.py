@@ -239,9 +239,9 @@ if __name__ == "__main__":
     data_splits = ['dev', 'train', 'test']
 
     index_input_file = to_index_input + 'index_input_file'
-    gold_answer_file = workdir + 'gold_answer_qrels'
+    gold_answer_qrels_file = workdir + 'gold_answer_qrels'
     
-    [trec_answers, ids_equiv] = answers_to_trec(q_data_all, gold_answer_file) # Use all data instead the data split
+    [trec_answers, ids_equiv] = answers_to_trec(q_data_all, gold_answer_qrels_file) # Use all data instead the data split
     to_trecfile(trec_answers, index_input_file, compression = 'no')
     
     for data_split in data_splits:
