@@ -11,8 +11,9 @@ import json
 # import gzip
 import os
 import subprocess
+from functools import partial
 # import numpy as np
-# import multiprocessing
+import multiprocessing
 # import re 
 # import csv
 # import torch
@@ -112,9 +113,16 @@ class fakeParser:
         self.gen_features = True
 #         self.gen_features = None
         
+def start_process():
+    print( 'Starting', multiprocessing.current_process().name)
+
+    
+def mini_process(gen_features_param_file):
+    feature_generator = GenerateExtraFeatures(ir_toolkit_location, gen_features_param_file)
+    feature_generator.run()
 
 if __name__ == "__main__":
-    
+        
     
 # #     ir_toolkit_location = sys.argv[1] # '../indri/'
 
@@ -129,6 +137,7 @@ if __name__ == "__main__":
 #     args = fakeParser()
     ir_toolkit_location = '../indri-l2r/'
     
+    pool_size = 3
     workdir = './workdir/'
     confdir = './tvqa_config/'
     gen_features_dir = workdir + 'gen_features_dir/'
@@ -140,7 +149,6 @@ if __name__ == "__main__":
     stopwords_file = confdir + 'stopwords'
     all_sub_files = workdir + 'sub_files/'
     all_retrieved_files = workdir + 'retrieved_files/'
-    gen_features_param_file = workdir + 'gen_features_param_file'
     
     gold_answer_qrels_file = workdir + 'gold_answer_qrels'
     
@@ -149,12 +157,15 @@ if __name__ == "__main__":
     else:
         data_splits = [args.data_split]
     
+    feature_param_files = []
     for data_split in data_splits:
         subtitles_topics_file = all_sub_files + 'subtitle_indri_query_file_' + data_split
   
         run_filename = all_retrieved_files + 'run_tfidf_' + data_split
         
         out_features_file = gen_features_dir + 'l2r_features_' + data_split
+        gen_features_param_file = workdir + 'gen_features_param_file' + data_split
+        feature_param_files.append(gen_features_param_file)
         
         features_params =[
             subtitles_topics_file,
@@ -164,9 +175,20 @@ if __name__ == "__main__":
             gold_answer_qrels_file,
             'none', # This should not be here!, Fix GenerateExtraFeatures.cpp to read from index manifest
         ]    
+        
         generate_features_params(features_params, gen_features_param_file)
+        
 
-            # Generate L2R features 
+    # Generate L2R features 
+    
+    pool = multiprocessing.Pool(processes=pool_size,
+                            initializer=start_process,
+                            )
 
-        feature_generator = GenerateExtraFeatures(ir_toolkit_location, gen_features_param_file)
-        feature_generator.run()
+    pool_outputs = pool.map_async(mini_process, feature_param_files)
+
+    pool.close() # no more tasks
+
+    pool.join()  # wrap up current tasks
+
+
