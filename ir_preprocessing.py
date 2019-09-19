@@ -254,10 +254,10 @@ if __name__ == "__main__":
         q_data = load_json(input_file)
         # Convert all questions / subtitles to one trec topics file 
 
-        query_topics_file = all_query_files + 'query_indri_file_' + data_split
-    #     q_data_to_trec_file(q_data, query_topics_file, q_or_s = 'q')
+#         query_topics_file = all_query_files + 'query_indri_file_' + data_split
+#     #     q_data_to_trec_file(q_data, query_topics_file, q_or_s = 'q')
 
-        subtitles_topics_file = all_query_files + 'subtitle_indri_query_file_' + data_split
+        subtitles_topics_file = all_sub_files + 'subtitle_indri_query_file_' + data_split
         q_data_to_trec_file(q_data, subtitles_topics_file, q_or_s = 's')
 
 

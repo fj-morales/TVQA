@@ -34,14 +34,11 @@ import argparse
 
 ## My libraries
 
-import eval_utils
-import utils
-from utils import load_queries
-import bioasq_corpus_parser
-# import bioasq_query_parser
-import query_parser
+# import eval_utils
+from ir_utils import *
+
 # from utils import *
-from join_split_files import join_files
+# from join_split_files import join_files
 
 
 
@@ -125,27 +122,27 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description='Example 1 - sequential and local execution.')
 #     parser.add_argument('--dataset',   type=str, help='')
-#     parser.add_argument('--data_split',   type=str, help='')
+    parser.add_argument('--data_split',   type=str, help='')
 #     parser.add_argument('--fold', type=str,   help='')
     
     args=parser.parse_args()
 #     args = fakeParser()
     ir_toolkit_location = '../indri-l2r/'
     
-    gen_features_dir = workdir + 'gen_features_dir/'
-    
-    create_dir(to_index_input)
-    
     workdir = './workdir/'
     confdir = './tvqa_config/'
+    gen_features_dir = workdir + 'gen_features_dir/'
+    
+    create_dir(gen_features_dir)
     
     index_dir = workdir + 'index_dir/'
     parameter_file_location = confdir + '_index_param_file'
     stopwords_file = confdir + 'stopwords'
     all_sub_files = workdir + 'sub_files/'
     all_retrieved_files = workdir + 'retrieved_files/'
-
-    gen_features_param_file = filename_prefix + '_gen_features_params'
+    gen_features_param_file = workdir + 'gen_features_param_file'
+    
+    gold_answer_qrels_file = workdir + 'gold_answer_qrels'
     
     if args.data_split == 'all':
         data_splits = ['train', 'dev', 'test']
@@ -156,15 +153,15 @@ if __name__ == "__main__":
         subtitles_topics_file = all_sub_files + 'subtitle_indri_query_file_' + data_split
   
         run_filename = all_retrieved_files + 'run_tfidf_' + data_split
-        qrels_file = filename_prefix + '_qrels'
-        out_features_file = gen_features_dir + 'l2r_features'
+        
+        out_features_file = gen_features_dir + 'l2r_features_' + data_split
         
         features_params =[
             subtitles_topics_file,
             index_dir,
             out_features_file,
-            run_filename_filtered,
-            qrels_file,
+            run_filename,
+            gold_answer_qrels_file,
             'none', # This should not be here!, Fix GenerateExtraFeatures.cpp to read from index manifest
         ]    
         generate_features_params(features_params, gen_features_param_file)
