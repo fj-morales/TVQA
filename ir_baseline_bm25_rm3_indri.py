@@ -829,36 +829,36 @@ if __name__ == "__main__":
     
 #     # Retrieve 1 (most relevant) answer/doc per question - multiprocessing 5000
     
-# #     if model_type == 'q':
-# #         print('Model type: question-answer')
-# #         q_topics_file = query_topics_file
-# #     elif model_type == 's':
-# #         print('Model type: subtitle-answer')
-# #         q_topics_file = subtitles_topics_file
+    if model_type == 'q':
+        print('Model type: question-answer')
+        q_topics_file = query_topics_file
+    elif model_type == 's':
+        print('Model type: subtitle-answer')
+        q_topics_file = subtitles_topics_file
         
     
-# #     # Global gold answers list
-# #     gold_answers_dict = {}
-# #     for q in  q_data:
-# #         gold_answers_dict[str(q['qid'])] = q['answer_idx']
+    # Global gold answers list
+    gold_answers_dict = {}
+    for q in  q_data:
+        gold_answers_dict[str(q['qid'])] = q['answer_idx']
 
-# # #     print('type gold: ', type(gold_answers_dict.keys()[0]))
+#     print('type gold: ', type(gold_answers_dict.keys()[0]))
     
-# #     # Pick best model according to accuracy
-# # #     if data_split == 'dev':
-# # #         find_best_model()
-# #     best_model_params_file = best_model_dir + 'tvqa' + '_bm25_rm3_best_model_dev.json'
+    # Pick best model according to accuracy
+#     if data_split == 'dev':
+#         find_best_model()
+    best_model_params_file = best_model_dir + 'tvqa' + '_bm25_rm3_best_model_dev.json'
     
-# # #     params = [1,1,1,1,1]
-# # #     evaluate_params(params)
-# # ###     retrieved_docs_file = './workdir6/retrieved_files_dev/run_bm25_rm3_preds_tvqa_dev_b0.45k1.5N275.0M134.0Lambda0.9n_rand_iter500hits1.txt'
-# #   ##  print(evaluate_params(retrieved_docs_file))
-# #     find_best_dev_model(best_model_params_file, n_rand_iter, pool_size)
+#     params = [1,1,1,1,1]
+#     evaluate_params(params)
+###     retrieved_docs_file = './workdir6/retrieved_files_dev/run_bm25_rm3_preds_tvqa_dev_b0.45k1.5N275.0M134.0Lambda0.9n_rand_iter500hits1.txt'
+  ##  print(evaluate_params(retrieved_docs_file))
+    find_best_dev_model(best_model_params_file, n_rand_iter, pool_size)
     
-# # #     print(q_data[0])
+#     print(q_data[0])
     
-# #     # Test on test set
-# # #     if data_split == 'test':
-# # #         evaluate_model()
+    # Test on test set
+#     if data_split == 'test':
+#         evaluate_model()
     
 

@@ -34,11 +34,18 @@ def load_json(input_file):
     with open(input_file, 'r') as f:
         return json.load(f)
 
-def answers_to_trec(q_data):
+def doc_to_trec(key, title):
+    trec_answer = {}
+    doc = '<DOC>\n' +             '<DOCNO>' + str(key) + '</DOCNO>\n' +             '<title>' + title + '</title>\n' +             '</DOC>\n'
+    trec_answer[str(key)] = doc
+    return trec_answer
+    
+def answers_to_trec(q_data, gold_answer_file):
     trec_answers = []
     seed = 0
     n_answers = 5
     ids_equivalences = {}
+    gold_qrel = []
     for item in q_data:
         answer_keys = range(seed,seed+n_answers)
         answers = [item['a' + str(i)] for i in range(0,5)]
@@ -47,17 +54,23 @@ def answers_to_trec(q_data):
             trec_answers.append(trec_answer)
             qa_key = str(item['qid']) + '_a' + str(a_item[0]%n_answers)
             ids_equivalences[str(a_item[0])] = qa_key
+            
         seed += n_answers
+        try:
+            gold_qrel.append(str(a_item[0]) + ' 0 ' + str(item['qid']) + '_' + str(item['answer_idx']) + ' 1')
+        except:
+            pass # For all the original test questions without gold answer
 #     print('equivs len: ', len(ids_equivalences))
     with open(all_data_ids_equiv_file, 'wt') as ids_e_f:
         json.dump(ids_equivalences, ids_e_f, indent=4)
+                              
+    print('Save gold file: ', gold_answer_file)
+    with open(gold_answer_file, 'wt') as gold_file:
+        for line in gold_qrel:
+            gold_file.write(line + '\n')
+    
     return [trec_answers, ids_equivalences]
 
-def doc_to_trec(key, title):
-    trec_answer = {}
-    doc = '<DOC>\n' +             '<DOCNO>' + str(key) + '</DOCNO>\n' +             '<title>' + title + '</title>\n' +             '</DOC>\n'
-    trec_answer[str(key)] = doc
-    return trec_answer
 
 def to_trecfile(docs, filename, compression = 'yes', query=False):
     print('Saving file: ', filename)
@@ -226,7 +239,9 @@ if __name__ == "__main__":
     data_splits = ['dev', 'train', 'test']
 
     index_input_file = to_index_input + 'index_input_file'
-    [trec_answers, ids_equiv] = answers_to_trec(q_data_all) # Use all data instead the data split
+    gold_answer_file = workdir + 'gold_answer_qrels'
+    
+    [trec_answers, ids_equiv] = answers_to_trec(q_data_all, gold_answer_file) # Use all data instead the data split
     to_trecfile(trec_answers, index_input_file, compression = 'no')
     
     for data_split in data_splits:
