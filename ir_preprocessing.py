@@ -249,7 +249,7 @@ if __name__ == "__main__":
         
         q_data = load_json(input_file)
         gold_answer_qrels_file = workdir + 'gold_answer_qrels_' + data_split
-        get_gold_answers(q_data)
+        get_gold_answers(q_data, gold_answer_qrels_file)
         
         # Convert all questions / subtitles to one trec topics file 
 

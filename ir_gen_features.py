@@ -163,7 +163,7 @@ if __name__ == "__main__":
         
         gold_answer_qrels_file = workdir + 'gold_answer_qrels_' + data_split
         out_features_file = gen_features_dir + 'l2r_features_' + data_split
-        gen_features_param_file = workdir + 'gen_features_param_file' + data_split
+        gen_features_param_file = workdir + 'gen_features_param_file_' + data_split
         feature_param_files.append(gen_features_param_file)
         
         features_params =[
