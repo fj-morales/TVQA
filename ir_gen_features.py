@@ -150,8 +150,6 @@ if __name__ == "__main__":
     all_sub_files = workdir + 'sub_files/'
     all_retrieved_files = workdir + 'retrieved_files/'
     
-    gold_answer_qrels_file = workdir + 'gold_answer_qrels'
-    
     if args.data_split == 'all':
         data_splits = ['train', 'dev', 'test']
     else:
@@ -163,6 +161,7 @@ if __name__ == "__main__":
   
         run_filename = all_retrieved_files + 'run_tfidf_' + data_split
         
+        gold_answer_qrels_file = workdir + 'gold_answer_qrels_' + data_split
         out_features_file = gen_features_dir + 'l2r_features_' + data_split
         gen_features_param_file = workdir + 'gen_features_param_file' + data_split
         feature_param_files.append(gen_features_param_file)

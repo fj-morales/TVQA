@@ -40,12 +40,11 @@ def doc_to_trec(key, title):
     trec_answer[str(key)] = doc
     return trec_answer
     
-def answers_to_trec(q_data, gold_answer_file):
+def answers_to_trec(q_data):
     trec_answers = []
     seed = 0
     n_answers = 5
     ids_equivalences = {}
-    gold_qrel = []
     for item in q_data:
         answer_keys = range(seed,seed+n_answers)
         answers = [item['a' + str(i)] for i in range(0,5)]
@@ -56,19 +55,11 @@ def answers_to_trec(q_data, gold_answer_file):
             ids_equivalences[str(a_item[0])] = qa_key
             
         seed += n_answers
-        try:
-            gold_qrel.append(str(a_item[0]) + ' 0 ' + str(item['qid']) + '_' + str(item['answer_idx']) + ' 1')
-        except:
-            pass # For all the original test questions without gold answer
+        
 #     print('equivs len: ', len(ids_equivalences))
     with open(all_data_ids_equiv_file, 'wt') as ids_e_f:
         json.dump(ids_equivalences, ids_e_f, indent=4)
                               
-    print('Save gold file: ', gold_answer_file)
-    with open(gold_answer_file, 'wt') as gold_file:
-        for line in gold_qrel:
-            gold_file.write(line + '\n')
-    
     return [trec_answers, ids_equivalences]
 
 
@@ -98,9 +89,8 @@ def to_trecfile(docs, filename, compression = 'yes', query=False):
             if query == True:
                 f_out.write('</parameters>\n')
 
-def to_indri_queries(q_data, q_or_s):
+def to_indri_queries(q_data, q_or_s, inverted_ids):
     indri_queries = []
-    inverted_ids = invert_ids(inverted_ids_file)
 
     for item in q_data:
 #         print('id: ', item['qid'])
@@ -108,20 +98,17 @@ def to_indri_queries(q_data, q_or_s):
         for i in range(0,5):
             q_id_ans = str(item['qid']) + '_a' + str(i)
             q_a_ans_aux_ids.append(inverted_ids[q_id_ans])
-            
-            
+                     
 #             print('equiv_dict: ', q_id_ans, inverted_ids[q_id_ans])
-            
             
         if q_or_s == 'q':
             indri_queries.append(to_indri_query(item['qid'], item['q'], q_a_ans_aux_ids))
         if q_or_s == 's':
             indri_queries.append(to_indri_query(item['qid'], item['located_sub_text'], q_a_ans_aux_ids))
         
-        
     return indri_queries
 
-def invert_ids(inverted_ids_file):
+def invert_ids(all_data_ids_equiv_file):
     with open(all_data_ids_equiv_file, 'rt') as ids_equiv_f:
         ids_equiv = json.load(ids_equiv_f)
         inverted_id_equiv = {v: k for k, v in ids_equiv.iteritems()}
@@ -129,7 +116,7 @@ def invert_ids(inverted_ids_file):
 
     
 def q_data_to_trec_file(q_data, filename, q_or_s):
-    indri_queries = to_indri_queries(q_data, q_or_s)
+    indri_queries = to_indri_queries(q_data, q_or_s, inverted_ids)
     to_trecfile(indri_queries, filename, compression = 'no', query = True)
 
 
@@ -149,7 +136,15 @@ def remove_sc(text):
     text = re.sub(r'[^\w\s]',' ',text) # My method
     return text    
 
-                
+def get_gold_answers(q_data, gold_answer_qrels_file):
+    gold_qrel = []
+    for item in q_data:
+        gold_qrel.append(str(item['qid']) + ' 0 ' + str(item['qid']) + '_' + str(item['answer_idx']) + ' 1')
+        
+    print('Save gold file: ', gold_answer_qrels_file)
+    with open(gold_answer_qrels_file, 'wt') as gold_file:
+        for line in gold_qrel:
+            gold_file.write(line + '\n')    
 
 class fakeParser:
     def __init__(self):
@@ -202,7 +197,6 @@ if __name__ == "__main__":
     
     
     all_data_ids_equiv_file = workdir + 'all_data_ids_equiv.json'
-    inverted_ids_file = workdir + 'ids_equiv.json' 
     
     create_dir(workdir)
     
@@ -241,8 +235,10 @@ if __name__ == "__main__":
     index_input_file = to_index_input + 'index_input_file'
     gold_answer_qrels_file = workdir + 'gold_answer_qrels'
     
-    [trec_answers, ids_equiv] = answers_to_trec(q_data_all, gold_answer_qrels_file) # Use all data instead the data split
+    [trec_answers, ids_equiv] = answers_to_trec(q_data_all) # Use all data instead the data split
     to_trecfile(trec_answers, index_input_file, compression = 'no')
+    
+    inverted_ids = invert_ids(all_data_ids_equiv_file)
     
     for data_split in data_splits:
         
@@ -252,6 +248,9 @@ if __name__ == "__main__":
             input_file = './data/tvqa_new_' + data_split + '_processed.json'  # './data/tvqa_new_dev_processed.json'
         
         q_data = load_json(input_file)
+        gold_answer_qrels_file = workdir + 'gold_answer_qrels_' + data_split
+        get_gold_answers(q_data)
+        
         # Convert all questions / subtitles to one trec topics file 
 
 #         query_topics_file = all_query_files + 'query_indri_file_' + data_split
