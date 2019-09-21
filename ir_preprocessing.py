@@ -136,10 +136,12 @@ def remove_sc(text):
     text = re.sub(r'[^\w\s]',' ',text) # My method
     return text    
 
-def get_gold_answers(q_data, gold_answer_qrels_file):
+def get_gold_answers(q_data, inverted_ids, gold_answer_qrels_file):
     gold_qrel = []
     for item in q_data:
-        gold_qrel.append(str(item['qid']) + ' 0 ' + str(item['qid']) + '_' + str(item['answer_idx']) + ' 1')
+        inv_qa_key = str(item['qid']) + '_a' + str(item['answer_idx'])
+        inverted_ids[inv_qa_key]
+        gold_qrel.append(str(item['qid']) + ' 0 ' + inverted_ids[inv_qa_key] + ' 1')
         
     print('Save gold file: ', gold_answer_qrels_file)
     with open(gold_answer_qrels_file, 'wt') as gold_file:
@@ -249,7 +251,7 @@ if __name__ == "__main__":
         
         q_data = load_json(input_file)
         gold_answer_qrels_file = workdir + 'gold_answer_qrels_' + data_split
-        get_gold_answers(q_data, gold_answer_qrels_file)
+        get_gold_answers(q_data, inverted_ids, gold_answer_qrels_file)
         
         # Convert all questions / subtitles to one trec topics file 
 
