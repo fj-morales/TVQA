@@ -1,0 +1,8 @@
+<parameters>
+<baseline>tfidf,k1:1.2,b:0.75</baseline>
+<index>./workdir/index_dir</index>
+<count>10</count>
+<threads>30</threads>
+<trecFormat>true</trecFormat>
+</parameters>
+

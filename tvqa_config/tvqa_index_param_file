@@ -1,0 +1,12 @@
+<parameters>
+     <memory>20g</memory>
+     <threads>
+     20
+     </threads>
+     <index>./workdir/index_dir</index>
+     <corpus>
+       <path>./workdir/index_inputs</path>        
+       <class>trectext</class>
+     </corpus>
+     <field><name>title</name></field>
+</parameters>
