@@ -56,12 +56,20 @@ def answers_to_trec(q_data):
             
         seed += n_answers
         
-#     print('equivs len: ', len(ids_equivalences))
+     #print('equivs len: ', len(ids_equivalences))
     with open(all_data_ids_equiv_file, 'wt') as ids_e_f:
         json.dump(ids_equivalences, ids_e_f, indent=4)
                               
     return [trec_answers, ids_equivalences]
 
+
+def get_equiv(all_ids_equiv_inv, q_data):
+    partial_ids_equiv = {}
+    for item in q_data:
+        value = str(item['qid']) + '_a' + str(item['answer_idx'])
+        key = all_ids_equiv_inv[value]
+        partial_ids_equiv[key] = value
+    return partial_ids_equiv
 
 def to_trecfile(docs, filename, compression = 'yes', query=False):
     print('Saving file: ', filename)
@@ -250,6 +258,14 @@ if __name__ == "__main__":
             input_file = './data/tvqa_new_' + data_split + '_processed.json'  # './data/tvqa_new_dev_processed.json'
         
         q_data = load_json(input_file)
+        
+        partial_ids = get_equiv(inverted_ids, q_data)
+        
+        partial_ids_equiv = workdir + data_split + '_' + 'ids_equiv' + '.json'
+        
+        with open(partial_ids_equiv, 'wt') as p_f:
+            json.dump(partial_ids, p_f, indent=4)
+        
         gold_answer_qrels_file = workdir + 'gold_answer_qrels_' + data_split
         get_gold_answers(q_data, inverted_ids, gold_answer_qrels_file)
         

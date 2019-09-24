@@ -62,4 +62,4 @@ def evaluate(predicted_answers, gold_answers):
     preds = np.asarray(predicted_answers)
     targets = np.asarray(gold_answers)
     acc = sum(preds == targets) / float(len(preds))
-    return acc
+    return round(float(acc),5)

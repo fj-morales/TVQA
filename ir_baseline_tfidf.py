@@ -132,3 +132,7 @@ if __name__ == "__main__":
 
         tfidf_query = Query(ir_toolkit_location, subtitles_topics_file, query_parameter_file, run_filename, stopwords_file)
         tfidf_query.run() # fast
+        
+    [pred_answers, gold_answers] = load_predictions(retrieved_docs_file, all_data_ids_equiv_file)
+            
+    val_acc = evaluate(pred_answers, gold_answers)
