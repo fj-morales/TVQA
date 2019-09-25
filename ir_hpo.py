@@ -39,6 +39,8 @@ from hpbandster.optimizers import RandomSearch as RS
 import random
 import pickle
 
+from datetime import datetime
+
 import logging
 logging.basicConfig(level=logging.WARNING)
 # In[2]:
@@ -218,10 +220,12 @@ if __name__ == "__main__":
 
     # In[13]:
 
-
+    # current date and time
+    now = datetime.now()
+    timestamp = datetime.timestamp(now)
     # Save results for further_analysis
 
-    results_file = workdir + dataset + '_' + 'hpo_results_' + hpo_method + '.pickle'
+    results_file = workdir + dataset + '_' + 'hpo_results_' + hpo_method + '_' + timestamp +'.pickle'
 
     results = {'hpo_config': args,
                 'hpo_results': res
