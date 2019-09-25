@@ -1,11 +1,23 @@
 import numpy as np
 import json
+from ir_preprocessing import load_json
 
-def load_predictions(retrieved_docs_file, all_data_ids_equiv_file):
+
+def load_predictions(retrieved_docs_file, ids_equiv_file, val_questions_file):
     preds = []
     golds = []
     
-    with open(all_data_ids_equiv_file, 'rt') as ids_equiv_f:
+    print(retrieved_docs_file, 
+         ids_equiv_file,
+         val_questions_file
+         )
+    
+    q_val_data = load_json(val_questions_file)
+    gold_answers_dict = {}
+    for q in  q_val_data:
+        gold_answers_dict[str(q['qid'])] = q['answer_idx']
+    
+    with open(ids_equiv_file, 'rt') as ids_equiv_f:
         ids_equiv = json.load(ids_equiv_f)
     
     with open(retrieved_docs_file, 'rt') as r_file:

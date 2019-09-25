@@ -1,4 +1,4 @@
-w# Imports
+# Imports
 import os
 import subprocess
 import sys
@@ -12,7 +12,9 @@ from ir_lmart import *
 
 # HPO
 
-from hpo import *
+# from hpo import *
+
+
 # from HpoWorker import *
 from HpoWorker import *
 
@@ -172,7 +174,7 @@ if __name__ == "__main__":
         
     workers=[]
     for i in range(args.n_workers):
-        worker = HpoWorker(dataset, workdir, confdir, ranklib_location, norm_params, ranker_type,
+        worker = HpoWorker(dataset, workdir, confdir, gen_features_dir, ranklib_location, norm_params, ranker_type,
                            metric2t, million_tickets, nameserver=ns_host, nameserver_port=ns_port, run_id=hpo_run_id, id=i)
         worker.run(background=True)
         workers.append(worker)

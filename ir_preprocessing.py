@@ -66,9 +66,11 @@ def answers_to_trec(q_data):
 def get_equiv(all_ids_equiv_inv, q_data):
     partial_ids_equiv = {}
     for item in q_data:
-        value = str(item['qid']) + '_a' + str(item['answer_idx'])
-        key = all_ids_equiv_inv[value]
-        partial_ids_equiv[key] = value
+        for i in range(0,5):
+            value = str(item['qid']) + '_a' + str(i)
+            key = all_ids_equiv_inv[value] 
+            partial_ids_equiv[key] = value
+#         print(item['qid'])
     return partial_ids_equiv
 
 def to_trecfile(docs, filename, compression = 'yes', query=False):
@@ -148,7 +150,7 @@ def get_gold_answers(q_data, inverted_ids, gold_answer_qrels_file):
     gold_qrel = []
     for item in q_data:
         inv_qa_key = str(item['qid']) + '_a' + str(item['answer_idx'])
-        inverted_ids[inv_qa_key]
+
         gold_qrel.append(str(item['qid']) + ' 0 ' + inverted_ids[inv_qa_key] + ' 1')
         
     print('Save gold file: ', gold_answer_qrels_file)

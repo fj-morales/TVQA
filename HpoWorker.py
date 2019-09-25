@@ -8,6 +8,7 @@ import ConfigSpace.hyperparameters as CSH
 from hpbandster.core.worker import Worker
 
 from ir_utils import *
+from ir_preprocessing import load_json
 
 # HPO server and stuff
 
@@ -65,39 +66,43 @@ logging.basicConfig(level=logging.WARNING)
 #         print('Budget is outside the limits (10% < b < 100%): ', budget)
 #         return 'THIS IS NOT WORKING'
 
-def get_train_budget_data_file(budget, qid_list, train_data_file):
+def get_train_budget_data_file(budget, train_questions_file, train_data_file):
     # Budget is percentage of training data: 
     # min_budget = 10%
     # max_budget = 100%
-    if (int(budget) <= 100 or int(budget) >= 10):
-        len_queries = len(qid_list)
-        
-        budgeted_queries = round(len_queries * (budget / 100))
-        print('total budget:', len_queries)
-        print('allocated budget:', budgeted_queries)
-        train_budget_queries_file = train_data_file + '_budget' + str(budget)
-        if not os.path.exists(train_budget_queries_file):
-            #                         print('queries lenght\n:',len_queries)
+    
+    train_budget_queries_file = train_data_file + '_budget' + str(budget)
+    if not os.path.exists(train_budget_queries_file):
+
+        if (int(budget) <= 100 or int(budget) >= 10):
+            # Preparing budgeted train features data 
+            train_questions = load_json(train_questions_file)
+            qid_list = [str(x['qid']) for x in train_questions]
+            len_queries = len(qid_list) 
+            
+            budgeted_queries = round(len_queries * (budget / 100))
+            print('total budget:', len_queries)
+            print('allocated budget:', budgeted_queries)
+            
             with open(train_data_file, 'rt') as f_in:
                 with open(train_budget_queries_file, 'wt') as budget_file_out:
-                    
                     for query_feature in f_in:                        
-
                         qid = query_feature.split()[1].split(':')[1]
-#                         print(qid)
+                        
                         if qid in qid_list[0:budgeted_queries]:
                             
                             budget_file_out.write(query_feature)
                     return train_budget_queries_file
+
         else:
-            print("File already exists")
-            return train_budget_queries_file                
+            print('Budget is outside the limits (10% < b < 100%): ', budget)
+            return 'THIS IS NOT WORKING'   
     else:
-        print('Budget is outside the limits (10% < b < 100%): ', budget)
-        return 'THIS IS NOT WORKING'   
+        print("File already exists")
+        return train_budget_queries_file                
     
 def compute_one_fold(budget, config, tickets, save_model_prefix, run_file_prefix, model_instance, 
-                     qrels_val_file, qid_list, train_data_file, trec_eval_command, *args, **kwargs):
+                     train_questions_file, train_data_file, val_ids_equiv_file, val_questions_file, *args, **kwargs):
     
             """
             Simple example for a compute function using a feed forward network.
@@ -143,7 +148,7 @@ def compute_one_fold(budget, config, tickets, save_model_prefix, run_file_prefix
 #             print(self.qid_list)
             
 
-            budget_train_features_file = get_train_budget_data_file(budget, qid_list, train_data_file)
+            budget_train_features_file = get_train_budget_data_file(budget, train_questions_file, train_data_file)
             
 #             lmart_model = L2Ranker(ranklib_location, l2r_params, norm_params)
 #             print('budget_file:', budget_train_features_file)
@@ -157,13 +162,7 @@ def compute_one_fold(budget, config, tickets, save_model_prefix, run_file_prefix
             
             # Evaluate Model
             
-            ## FIX!!!!
-            
-            '''
-            All ids equivs deberia cargar solo los ids de validation data, no todo a la vez!
-            '''
-            
-            [pred_answers, gold_answers] = load_predictions(retrieved_docs_file, all_data_ids_equiv_file)
+            [pred_answers, gold_answers] = load_predictions(run_val_file, val_ids_equiv_file, val_questions_file)
             
             val_acc = evaluate(pred_answers, gold_answers)
             
@@ -175,7 +174,7 @@ def compute_one_fold(budget, config, tickets, save_model_prefix, run_file_prefix
 
 
 class HpoWorker(Worker):
-    def __init__(self, dataset, workdir, confdir, ranklib_location, norm_params, ranker_type, metric2t, tickets, **kwargs):
+    def __init__(self, dataset, workdir, confdir, gen_features_dir, ranklib_location, norm_params, ranker_type, metric2t, tickets, **kwargs):
             super().__init__(**kwargs)
             self.dataset = dataset
             self.workdir = workdir
@@ -185,6 +184,7 @@ class HpoWorker(Worker):
             self.metric2t = metric2t
             self.norm_params = norm_params
             self.confdir = confdir
+            self.gen_features_dir = gen_features_dir
             
 #             self.save_model_prefix = save_model_prefix
 #             self.run_file_prefix = run_file_prefix
@@ -211,19 +211,22 @@ class HpoWorker(Worker):
             folds = ['']
             cv_results_dict = {}
             fold_dir = self.workdir
-            
             for fold in folds:
                 
-                train_data_file = gen_features_dir + 'l2r_features_train'
-                val_data_file = gen_features_dir + 'l2r_features_dev'
-                test_data_file = gen_features_dir + 'l2r_features_test'
-                qrels_val_file = self.workdir + 'gold_answer_qrels_dev'
-                all_data_ids_equiv_file = self.workdir + 'all_data_ids_equiv.json'
-                
+                dataset_fold = self.dataset
+                train_data_file = self.gen_features_dir + 'l2r_features_train'
+                val_data_file = self.gen_features_dir + 'l2r_features_dev'
+                test_data_file = self.gen_features_dir + 'l2r_features_test'
+#                 qrels_val_file = self.workdir + 'gold_answer_qrels_dev'
+#                 all_data_ids_equiv_file = self.workdir + 'all_data_ids_equiv.json'
+                train_questions_file = './data/tvqa_new_train_processed.json'
+                val_questions_file = './data/tvqa_new_dev_processed.json'
+                val_ids_equiv_file = self.workdir + 'dev_ids_equiv.json'
+                            
                 if self.ranker_type == '6':
                     l2r_model = '_lmart_'
                     
-                enabled_features_file = confdir + self.dataset + l2r_model + 'enabled_features'
+                enabled_features_file = self.confdir + self.dataset + l2r_model + 'enabled_features'
                 l2r_params = [
                     '-validate',
                     val_data_file,
@@ -240,15 +243,9 @@ class HpoWorker(Worker):
 
                 save_model_prefix = fold_dir + dataset_fold + l2r_model
 
-                run_file_prefix = fold_dir + 'run_' + dataset_fold + l2r_model
+                run_file_prefix = fold_dir + 'retrieved_files/' + 'run_' + dataset_fold + l2r_model
 
-                # Preparing budgeted train features data 
-                query_list = load_queries(train_queries_file)
-                qid_list = [q['id'] for q in query_list] 
-                len_queries = len(qid_list) 
-                
-
-                train_features_file =  fold_dir + self.dataset + '_' + 'train' + '_features'
+                train_features_file = fold_dir + self.dataset + '_' + 'train' + '_features'
 
 
 #                 budget_train_features_file = train_data_file
@@ -256,7 +253,7 @@ class HpoWorker(Worker):
 
                 # Compute results for one fold
                 one_fold_results = compute_one_fold(budget, config, self.tickets, save_model_prefix, run_file_prefix, lmart_model, 
-                                                     qrels_val_file, qid_list, train_data_file, self.trec_eval_command)
+                                                     train_questions_file, train_data_file, val_ids_equiv_file, val_questions_file)
 
                 cv_results_dict['s' + fold] = one_fold_results
 
