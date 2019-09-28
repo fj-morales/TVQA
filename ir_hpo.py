@@ -39,6 +39,8 @@ from hpbandster.optimizers import RandomSearch as RS
 import random
 import pickle
 
+from ir_test import *
+
 from datetime import datetime
 
 import logging
@@ -135,8 +137,18 @@ if __name__ == "__main__":
     parser.add_argument('--max_budget',   type=int, help='Maximum (percentage) budget used during the optimization.',    default=100)
     parser.add_argument('--n_iterations', type=int,   help='Number of iterations performed by the optimizer', default=500)
     parser.add_argument('--n_workers', type=int,   help='Number of workers to run in parallel.', default=5)
+    parser.add_argument('--default_config', action='store_true', )
     
     args=parser.parse_args()
+    
+    if args.default_config:
+        print('Using default HPO config values and only one worker, iteration, max_budget, and rs method.\n')
+        args.hpo_method = 'rs'
+        args.min_budget = 100
+        args.max_budget = 100
+        args.n_iterations = 1
+        args.n_workers = 1
+    
 #     args = fakeParser()
     
     
@@ -185,7 +197,7 @@ if __name__ == "__main__":
     # Random search
 
     if hpo_method == 'rs':
-        rs = RS(  configspace = worker.get_configspace(),
+        rs = RS(  configspace = worker.get_configspace(args.default_config),
                               run_id = hpo_run_id, 
                               nameserver=ns_host,
                               nameserver_port=ns_port,
@@ -195,7 +207,7 @@ if __name__ == "__main__":
 
         rs.shutdown(shutdown_workers=True)
     elif hpo_method == 'bohb':
-        bohb = BOHB(  configspace = worker.get_configspace(),
+        bohb = BOHB(  configspace = worker.get_configspace(args.default_config),
                               run_id = hpo_run_id, 
                               nameserver=ns_host,
                               nameserver_port=ns_port,
@@ -220,12 +232,21 @@ if __name__ == "__main__":
 
     # In[13]:
 
+    # Evaluate
+    
+    test_results = test_model(workdir, ranklib_location, norm_params, res)
+
+    print('BEST RESULTS EVER!!: ', test_results)
+    
     # current date and time
     now = datetime.now()
     timestamp = datetime.timestamp(now)
     # Save results for further_analysis
 
-    results_file = workdir + dataset + '_' + 'hpo_results_' + hpo_method + '_' + timestamp +'.pickle'
+    if args.default_config:
+        results_file = workdir + dataset + '_' + 'defaults' + '_' + str(timestamp) +'.pickle'
+    else:
+        results_file = workdir + dataset + '_' + 'hpo_results_' + hpo_method + '_' + str(timestamp) +'.pickle'
 
     results = {'hpo_config': args,
                 'hpo_results': res

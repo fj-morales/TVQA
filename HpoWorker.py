@@ -165,11 +165,16 @@ def compute_one_fold(budget, config, tickets, save_model_prefix, run_file_prefix
             [pred_answers, gold_answers] = load_predictions(run_val_file, val_ids_equiv_file, val_questions_file)
             
             val_acc = evaluate(pred_answers, gold_answers)
+
+            
+            print('Metric: ', val_acc, '\n')
             
             #import IPython; IPython.embed()
             return ({
                     'metric': val_acc,
-                    'info': 'Accuracy evaluated based on P@1'
+                    'info': { 'label': 'Accuracy based, LambdaMART optimized based on P@1',
+                             'model_file':  save_model_file
+                        }
             })
 
 
@@ -271,7 +276,7 @@ class HpoWorker(Worker):
             
         
     @staticmethod
-    def get_configspace():
+    def get_configspace(default_config):
             """
             It builds the configuration space with the needed hyperparameters.
             It is easily possible to implement different types of hyperparameters.
@@ -288,6 +293,11 @@ class HpoWorker(Worker):
             learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.1, upper=0.2, default_value=0.1, q=0.1, log=False)
             n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=5, upper=11, default_value=10, q=1, log=False)
 
+            if default_config:
+                n_leaves = CSH.OrdinalHyperparameter('n_leaves', sequence=[10])
+                learning_rate = CSH.OrdinalHyperparameter('learning_rate', sequence=[0.1])
+                n_trees = CSH.OrdinalHyperparameter('n_trees', sequence=[1000])
+            
             
             cs.add_hyperparameters([n_leaves, learning_rate, n_trees])
 

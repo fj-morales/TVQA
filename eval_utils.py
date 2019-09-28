@@ -1,6 +1,8 @@
 import numpy as np
 import json
+import pickle
 from ir_preprocessing import load_json
+
 
 
 def load_predictions(retrieved_docs_file, ids_equiv_file, val_questions_file):
@@ -64,6 +66,8 @@ def load_predictions(retrieved_docs_file, ids_equiv_file, val_questions_file):
 #     print('len preds: ', len(preds))
 #     print('len golds: ', len(gold_answers_dict))
     
+    pickle.dump([preds, golds], open('./borar_after.pickle', 'wb'))
+        
     return [preds, golds]
 
 def evaluate(predicted_answers, gold_answers):
@@ -75,3 +79,5 @@ def evaluate(predicted_answers, gold_answers):
     targets = np.asarray(gold_answers)
     acc = sum(preds == targets) / float(len(preds))
     return round(float(acc),5)
+
+

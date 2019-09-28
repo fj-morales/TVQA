@@ -17,6 +17,7 @@ import subprocess
 # import csv
 # import torch
 import sys
+from eval_utils import *
 # import shutil
 # import random
 
@@ -113,6 +114,9 @@ if __name__ == "__main__":
     all_sub_files = workdir + 'sub_files/'
     all_retrieved_files = workdir + 'retrieved_files/'
     
+    val_questions_file = './data/tvqa_new_dev_processed.json'
+    val_ids_equiv_file = workdir + 'dev_ids_equiv.json'
+    
 
     if args.data_split == 'all':
         data_splits = ['train', 'dev', 'test']
@@ -133,6 +137,8 @@ if __name__ == "__main__":
         tfidf_query = Query(ir_toolkit_location, subtitles_topics_file, query_parameter_file, run_filename, stopwords_file)
         tfidf_query.run() # fast
         
-    [pred_answers, gold_answers] = load_predictions(retrieved_docs_file, all_data_ids_equiv_file)
+    [pred_answers, gold_answers] = load_predictions(run_filename, val_ids_equiv_file, val_questions_file)
             
     val_acc = evaluate(pred_answers, gold_answers)
+    
+    print('Val acc: ', val_acc)
