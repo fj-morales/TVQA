@@ -117,7 +117,7 @@ class L2Ranker:
                                 pre_run_file     
                             ] 
         
-#         print(toolkit_parameters)
+        print(toolkit_parameters)
         with open(self.log_file, 'at') as rf:
             proc = subprocess.Popen(toolkit_parameters,stdin=subprocess.PIPE, stdout=rf, stderr=subprocess.STDOUT, shell=False)
 #         proc = subprocess.Popen(toolkit_parameters,stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)

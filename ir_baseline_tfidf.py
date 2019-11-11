@@ -117,6 +117,7 @@ if __name__ == "__main__":
     val_questions_file = './data/tvqa_new_dev_processed.json'
     val_ids_equiv_file = workdir + 'dev_ids_equiv.json'
     
+    
 
     if args.data_split == 'all':
         data_splits = ['train', 'dev', 'test']
@@ -126,6 +127,7 @@ if __name__ == "__main__":
 
     for data_split in data_splits:
         
+        gold_answer_qrels_file = workdir + 'gold_answer_qrels_' + data_split
         subtitles_topics_file = all_sub_files + 'subtitle_indri_query_file_' + data_split
 
          # Run query
@@ -137,8 +139,8 @@ if __name__ == "__main__":
         tfidf_query = Query(ir_toolkit_location, subtitles_topics_file, query_parameter_file, run_filename, stopwords_file)
         tfidf_query.run() # fast
         
-    [pred_answers, gold_answers] = load_predictions(run_filename, val_ids_equiv_file, val_questions_file)
-            
-    val_acc = evaluate(pred_answers, gold_answers)
-    
-    print('Val acc: ', val_acc)
+        [pred_answers, gold_answers] = load_predictions(run_filename, gold_answer_qrels_file)
+
+        acc = evaluate(pred_answers, gold_answers)
+
+        print(data_split + ' acc: ', acc)

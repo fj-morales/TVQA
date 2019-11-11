@@ -151,7 +151,6 @@ if __name__ == "__main__":
     
 #     args = fakeParser()
     
-    
     hpo_method = args.hpo_method
         
     million_tickets = tickets(1000000)
@@ -160,15 +159,27 @@ if __name__ == "__main__":
 
     dataset = 'tvqa'
     workdir = './workdir/'
+    
+    hpo_results_dir = workdir + 'hpo_results' + '_' + hpo_method + '/'
+    
+    destroy_dir(hpo_results_dir)
+    
     confdir = './tvqa_config/'
     gen_features_dir = workdir + 'gen_features_dir/'
     ranklib_location = '../ranklib/'
     
 #     trec_eval_command = '../../eval/trec_eval'
     
+    now = datetime.now()
+    timestamp = datetime.timestamp(now)
+    
+    inter_results_file = dataset + '_results_' + hpo_method + '_' + str(timestamp) + '.pkl'
+    
     metric2t = 'P@1' # 'MAP, NDCG@k, DCG@k, P@k, RR@k, ERR@k (default=ERR@10)'
     
     ranker_type = '6' # LambdaMART
+    
+    result_logger = hpres.json_result_logger(directory=hpo_results_dir, overwrite=False)
     
     # normalization: Feature Engineering?
     norm_params = ['-norm', 'zscore'] # 'sum', 'zscore', 'linear'
@@ -201,19 +212,30 @@ if __name__ == "__main__":
                               run_id = hpo_run_id, 
                               nameserver=ns_host,
                               nameserver_port=ns_port,
+                              result_logger=result_logger,
                               min_budget = args.max_budget, max_budget = args.max_budget
                        )
         res = rs.run(n_iterations = args.n_iterations, min_n_workers = args.n_workers)
 
+         # store results
+        with open(os.path.join(hpo_results_dir, inter_results_file), 'wb') as fh:
+            pickle.dump(res, fh)
+        
         rs.shutdown(shutdown_workers=True)
     elif hpo_method == 'bohb':
         bohb = BOHB(  configspace = worker.get_configspace(args.default_config),
                               run_id = hpo_run_id, 
                               nameserver=ns_host,
                               nameserver_port=ns_port,
+                              result_logger=result_logger,
                               min_budget = args.min_budget, max_budget = args.max_budget
                        )
         res = bohb.run(n_iterations = args.n_iterations, min_n_workers = args.n_workers)
+        
+        # store results
+        with open(os.path.join(hpo_results_dir, inter_results_file), 'wb') as fh:
+            pickle.dump(res, fh)
+            
         bohb.shutdown(shutdown_workers=True)
 
 

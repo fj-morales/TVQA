@@ -46,8 +46,9 @@ def test_model(workdir, ranklib_location, normalization, res):
     all_retrieved_files = workdir + 'retrieved_files/'
     gen_features_dir = workdir + 'gen_features_dir/'
 
-    test_questions_file = './data/tvqa_val_processed.json' # val here is test for our case
-    test_ids_equiv_file = workdir + 'test_ids_equiv.json'
+#     test_questions_file = './data/tvqa_val_processed.json' # val here is test for our case
+#     test_ids_equiv_file = workdir + 'test_ids_equiv.json'
+    gold_answer_qrels_file = workdir + 'gold_answer_qrels_' + 'test'
 
     ## Evaluate on test
 
@@ -63,7 +64,8 @@ def test_model(workdir, ranklib_location, normalization, res):
 
     gen_run_file(ranklib_location, normalization, best_model, test_data_file, run_test_file)
 
-    [pred_answers, gold_answers] = load_predictions(run_test_file, test_ids_equiv_file, test_questions_file)
+#     [pred_answers, gold_answers] = load_predictions(run_test_file, test_ids_equiv_file, test_questions_file)
+    [pred_answers, gold_answers] = load_predictions(run_test_file, gold_answer_qrels_file)
 
     test_acc = evaluate(pred_answers, gold_answers)
 

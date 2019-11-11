@@ -4,76 +4,40 @@ import pickle
 from ir_preprocessing import load_json
 
 
+def get_ans_dict(run_qrel_file):
+    '''It works for run and qrel files'''
+    ans = {}
+    with open(run_qrel_file, 'rt') as f_in:
+        for line in f_in:
+            line = line.strip('\n')
+            if line.split(' ')[3] == '1':
+                qid = line.split(' ')[0]
+                answer = line.split(' ')[2]
+                ans[qid] = answer
+    return ans
 
-def load_predictions(retrieved_docs_file, ids_equiv_file, val_questions_file):
-    preds = []
+def load_predictions(retrieved_docs_file, gold_qrels_file):
+    print('retrieved_docs_file: ', len(retrieved_docs_file))
+    print('gold_qrels_file: ', len(gold_qrels_file))
+    gold_dict = get_ans_dict(gold_qrels_file)
+    pred_dict = get_ans_dict(retrieved_docs_file)
+    
     golds = []
+    preds = []
     
-    print(retrieved_docs_file, 
-         ids_equiv_file,
-         val_questions_file
-         )
+    for k in gold_dict.keys():
+        golds.append(gold_dict[k])
+        if k in pred_dict.keys():
+            preds.append(pred_dict[k])
+        else:
+            preds.append('na')
     
-    q_val_data = load_json(val_questions_file)
-    gold_answers_dict = {}
-    for q in  q_val_data:
-        gold_answers_dict[str(q['qid'])] = q['answer_idx']
-    
-    with open(ids_equiv_file, 'rt') as ids_equiv_f:
-        ids_equiv = json.load(ids_equiv_f)
-    
-    with open(retrieved_docs_file, 'rt') as r_file:
-        
-        ret_qs = {}
-        for doc in r_file:
-            qid_ori = doc.split(' ')[0]
-            aux_id = doc.split(' ')[2]
-            ret_qs[qid_ori] = aux_id
-        
-        for qid, gold in gold_answers_dict.items():
-#             print('gold_qid: ', qid)
-#             print('gold_value: ', gold)
-            golds.append(int(gold))
-    
-            if str(qid) in ret_qs.keys():
-                aux_id = ret_qs[qid]
-
-                qid_aux = ids_equiv[aux_id].split('_')[0]
-                qa_key = ids_equiv[aux_id]
-    #             print('qid, aux, gold, : ', qid, aux_id, gold, qid_aux)
-                if str(qid) == str(qid_aux):
-                    pred = int(qa_key.split('_')[1].lstrip('a'))
-                else:
-                    pred = int(6) # Found wrong doc qid answer
-            else:
-                print('Qid not in retrieved: ', qid)
-                
-                pred = int(7) # Answer not found in index
-    
-    
-#             try:
-#                 aux_id = ret_qs[qid]
-#                 print('qid, aux, gold, : ', qid, aux_id, gold)
-#                 qid_aux = ids_equiv[aux_id].split('_')[0]
-#                 if str(qid) == str(qid_aux):
-#                     pred = int(qa_key.split('_')[1].lstrip('a'))
-#                 else:
-#                     pred = int(6) # Found wrong doc qid answer
-#             except: 
-#                 pred = int(7) # Answer not found in index
-            preds.append(pred) 
-                
-#     print('len preds: ', len(preds))
-#     print('len golds: ', len(gold_answers_dict))
-    
-    pickle.dump([preds, golds], open('./borar_after.pickle', 'wb'))
-        
     return [preds, golds]
 
 def evaluate(predicted_answers, gold_answers):
     
-#     print('preds: ', predicted_answers)
-#     print('golds: ', gold_answers)
+    print('preds: ', len(predicted_answers))
+    print('golds: ', len(gold_answers))
     
     preds = np.asarray(predicted_answers)
     targets = np.asarray(gold_answers)
