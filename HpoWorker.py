@@ -287,14 +287,14 @@ class HpoWorker(Worker):
             """
             cs = CS.ConfigurationSpace()
             
-#             n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=5, upper=100, default_value=10, q=5, log=False)
-#             learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.01, upper=0.5, default_value=0.1, q=0.01, log=False)
-#             n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=100, upper=2000, default_value=1000, q=50 ,log=False)
+            n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=5, upper=100, default_value=10, q=5, log=False)
+            learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.01, upper=0.5, default_value=0.1, q=0.01, log=False)
+            n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=100, upper=2000, default_value=1000, q=50 ,log=False)
             
             
-            n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=10, upper=11, default_value=10, log=False)
-            learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.1, upper=0.2, default_value=0.1, q=0.1, log=False)
-            n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=1, upper=2, default_value=1, q=1, log=False)
+#             n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=10, upper=11, default_value=10, log=False)
+#             learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.1, upper=0.2, default_value=0.1, q=0.1, log=False)
+#             n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=1, upper=2, default_value=1, q=1, log=False)
 
             if default_config:
                 n_leaves = CSH.OrdinalHyperparameter('n_leaves', sequence=[10])
