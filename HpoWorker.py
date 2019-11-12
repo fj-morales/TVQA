@@ -278,7 +278,7 @@ class HpoWorker(Worker):
             
         
     @staticmethod
-    def get_configspace(default_config):
+    def get_configspace(default_config,test_mode,leaf,lr,tree):
             """
             It builds the configuration space with the needed hyperparameters.
             It is easily possible to implement different types of hyperparameters.
@@ -287,20 +287,24 @@ class HpoWorker(Worker):
             """
             cs = CS.ConfigurationSpace()
             
-            n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=5, upper=100, default_value=10, q=5, log=False)
-            learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.01, upper=0.5, default_value=0.1, q=0.01, log=False)
-            n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=100, upper=2000, default_value=1000, q=50 ,log=False)
+#             n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=5, upper=100, default_value=10, q=5, log=False)
+#             learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.01, upper=0.5, default_value=0.1, q=0.01, log=False)
+#             n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=100, upper=2000, default_value=1000, q=50 ,log=False)
             
             
-#             n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=10, upper=11, default_value=10, log=False)
-#             learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.1, upper=0.2, default_value=0.1, q=0.1, log=False)
-#             n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=1, upper=2, default_value=1, q=1, log=False)
+            n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=10, upper=11, default_value=10, log=False)
+            learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.1, upper=0.2, default_value=0.1, q=0.1, log=False)
+            n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=1, upper=2, default_value=1, q=1, log=False)
 
             if default_config:
                 n_leaves = CSH.OrdinalHyperparameter('n_leaves', sequence=[10])
                 learning_rate = CSH.OrdinalHyperparameter('learning_rate', sequence=[0.1])
                 n_trees = CSH.OrdinalHyperparameter('n_trees', sequence=[1000])
             
+            if test_mode:
+                n_leaves = CSH.OrdinalHyperparameter('n_leaves', sequence=[leaf])
+                learning_rate = CSH.OrdinalHyperparameter('learning_rate', sequence=[lr])
+                n_trees = CSH.OrdinalHyperparameter('n_trees', sequence=[tree])            
             
             cs.add_hyperparameters([n_leaves, learning_rate, n_trees])
 
