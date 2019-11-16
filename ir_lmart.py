@@ -81,6 +81,7 @@ class L2Ranker:
                                 train_data_file,
                                 *self.normalization,
                                 *self.params,
+#                                 *self.params[2:], # [2:] To suppress the validation process during training
                                 '-leaf', 
                                 str(config['n_leaves']),
                                 '-shrinkage',

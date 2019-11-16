@@ -143,6 +143,7 @@ if __name__ == "__main__":
     parser.add_argument('--leaf', type=int, help='Number of leaves. Only works with test mode.' , default=10)
     parser.add_argument('--lr', type=float, help='Learning rate. Only works with test mode.' , default=0.1)
     parser.add_argument('--tree', type=int, help='Number of trees. Only works with test mode.' , default=1000)
+    parser.add_argument('--previous_run_dir',type=str, help='A directory that contains a config.json and results.json for the same configuration space.', default=None)
     
     args=parser.parse_args()
 #     args = fakeParser()
@@ -214,7 +215,8 @@ if __name__ == "__main__":
         worker.run(background=True)
         workers.append(worker)
 
-
+    # Continue previous runs
+    previous_run = hpres.logged_results_to_HBS_result(args.previous_run_dir)
     # Random search
 
     if hpo_method == 'rs':
@@ -228,7 +230,8 @@ if __name__ == "__main__":
                               nameserver=ns_host,
                               nameserver_port=ns_port,
                               result_logger=result_logger,
-                              min_budget = args.max_budget, max_budget = args.max_budget
+                              min_budget = args.max_budget, max_budget = args.max_budget,
+                              previous_result = previous_run
                        )
         res = hpo_worker.run(n_iterations = args.n_iterations, min_n_workers = args.n_workers)
 
@@ -244,7 +247,8 @@ if __name__ == "__main__":
                               nameserver=ns_host,
                               nameserver_port=ns_port,
                               result_logger=result_logger,
-                              min_budget = args.min_budget, max_budget = args.max_budget
+                              min_budget = args.min_budget, max_budget = args.max_budget,
+                              previous_result = previous_run
                        )
         res = hpo_worker.run(n_iterations = args.n_iterations, min_n_workers = args.n_workers)
 

@@ -52,7 +52,7 @@ def test_model(workdir, ranklib_location, normalization, res):
 
     ## Evaluate on test
 
-    run_test_file = fold_dir + 'retrieved_files/' + 'run_' + '_best_lmart_test' 
+    
 
     test_data_file = gen_features_dir + 'l2r_features_test'
 
@@ -61,6 +61,10 @@ def test_model(workdir, ranklib_location, normalization, res):
     print(config_results[0].info)
     
     best_model = config_results[0].info['s' + fold]['info']['model_file']
+    
+    suffix = best_model.split('/')[-1].split('_')[-3:]
+    
+    run_test_file = fold_dir + 'retrieved_files/' + 'run_' + 'best_lmart_test_' + str(suffix[0]) + '_' + str(suffix[1]) + '_' + str(suffix[2]) 
 
     gen_run_file(ranklib_location, normalization, best_model, test_data_file, run_test_file)
 
