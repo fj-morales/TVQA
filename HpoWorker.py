@@ -101,8 +101,8 @@ def get_train_budget_data_file(budget, train_questions_file, train_data_file):
         print("File already exists")
         return train_budget_queries_file                
     
-def compute_one_fold(budget, config, tickets, save_model_prefix, run_file_prefix, model_instance, 
-                     train_questions_file, train_data_file, gold_answer_qrels_file, *args, **kwargs):
+def compute_one_fold(budget, config, tickets, save_model_prefix, run_file_prefix, run_test_file_prefix, model_instance, 
+                     train_questions_file, train_data_file, gold_answer_qrels_file, gold_answer_qrels_test_file, *args, **kwargs):
     
             """
             Simple example for a compute function using a feed forward network.
@@ -143,6 +143,7 @@ def compute_one_fold(budget, config, tickets, save_model_prefix, run_file_prefix
             save_model_file = save_model_prefix + config_suffix
             
             run_val_file = run_file_prefix + config_suffix
+            run_test_file = run_test_file_prefix + config_suffix
             
 #             print('Type class of budget variable: ', type(budget))
 #             print(self.qid_list)
@@ -157,24 +158,29 @@ def compute_one_fold(budget, config, tickets, save_model_prefix, run_file_prefix
             model.train(budget_train_features_file, save_model_file, config)
         
             val_data_file = model.params[1]
+            test_data_file = model.test_data_file
             
             model.gen_run_file(val_data_file, run_val_file)
+            model.gen_run_file(test_data_file, run_test_file)
             
             # Evaluate Model
             
 #             [pred_answers, gold_answers] = load_predictions(run_val_file, val_ids_equiv_file, val_questions_file) # before
             [pred_answers, gold_answers] = load_predictions(run_val_file, gold_answer_qrels_file)
+            [pred_t_answers, gold_t_answers] = load_predictions(run_test_file, gold_answer_qrels_test_file)
             
             val_acc = evaluate(pred_answers, gold_answers)
+            test_acc = evaluate(pred_t_answers, gold_t_answers)
 
             
-            print('Metric: ', val_acc, '\n')
+            print('Metric val: ', val_acc, '\n', 'Metric test: ', test_acc)
             
             #import IPython; IPython.embed()
             return ({
                     'metric': val_acc,
                     'info': { 'label': 'Accuracy based, LambdaMART optimized based on P@1',
-                             'model_file':  save_model_file
+                             'model_file':  save_model_file,
+                             'test_results': test_acc
                         }
             })
 
@@ -229,6 +235,7 @@ class HpoWorker(Worker):
                 val_questions_file = './data/tvqa_new_dev_processed.json'
                 val_ids_equiv_file = self.workdir + 'dev_ids_equiv.json'
                 gold_answer_qrels_file = self.workdir + 'gold_answer_qrels_' + 'dev'
+                gold_answer_qrels_test_file = self.workdir + 'gold_answer_qrels_' + 'test'
                             
                 if self.ranker_type == '6':
                     l2r_model = '_lmart_'
@@ -246,11 +253,12 @@ class HpoWorker(Worker):
                 ]
 
                 # Run train
-                lmart_model = L2Ranker(self.ranklib_location, l2r_params, self.norm_params)
+                lmart_model = L2Ranker(self.ranklib_location, l2r_params, test_data_file, self.norm_params)
 
                 save_model_prefix = fold_dir + dataset_fold + l2r_model
 
                 run_file_prefix = fold_dir + 'retrieved_files/' + 'run_' + dataset_fold + l2r_model
+                run_test_file_prefix = fold_dir + 'retrieved_files/' + 'run_tests_' + dataset_fold + l2r_model
 
                 train_features_file = fold_dir + self.dataset + '_' + 'train' + '_features'
 
@@ -259,8 +267,8 @@ class HpoWorker(Worker):
 
 
                 # Compute results for one fold
-                one_fold_results = compute_one_fold(budget, config, self.tickets, save_model_prefix, run_file_prefix, lmart_model, 
-                                                     train_questions_file, train_data_file, gold_answer_qrels_file)
+                one_fold_results = compute_one_fold(budget, config, self.tickets, save_model_prefix, run_file_prefix, run_test_file_prefix, lmart_model, 
+                                                     train_questions_file, train_data_file, gold_answer_qrels_file, gold_answer_qrels_test_file)
 
                 cv_results_dict['s' + fold] = one_fold_results
 
@@ -287,12 +295,13 @@ class HpoWorker(Worker):
             """
             cs = CS.ConfigurationSpace()
             
+            # This is the one!
             n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=5, upper=100, default_value=10, q=5, log=False)
             learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.01, upper=0.5, default_value=0.1, q=0.01, log=False)
             n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=100, upper=2000, default_value=1000, q=50 ,log=False)
             
             
-#             n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=10, upper=11, default_value=10, log=False)
+#             n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=1, upper=2, default_value=1, log=False)
 #             learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.1, upper=0.2, default_value=0.1, q=0.1, log=False)
 #             n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=1, upper=2, default_value=1, q=1, log=False)
 

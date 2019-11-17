@@ -59,7 +59,7 @@ def generate_run_file(pre_run_file, run_file):
 
 # Classes
 class L2Ranker:
-    def __init__(self, ranklib_location, params, normalization=[]):
+    def __init__(self, ranklib_location, params, test_data_file, normalization=[]):
         self.ranklib_location = ranklib_location
         # Works with Oracle JSE
         # java version "1.8.0_211"
@@ -69,6 +69,7 @@ class L2Ranker:
         self.log_file = ''
         self.ranker_command = ['java', '-jar', ranklib_location + 'RankLib-2.12.jar']
         self.normalization = normalization
+        self.test_data_file = test_data_file
         self.save_model_file = ''
         
 #     def build(self, ir_tool_params):
