@@ -161,26 +161,27 @@ def compute_one_fold(budget, config, tickets, save_model_prefix, run_file_prefix
             test_data_file = model.test_data_file
             
             model.gen_run_file(val_data_file, run_val_file)
-            model.gen_run_file(test_data_file, run_test_file)
+#             model.gen_run_file(test_data_file, run_test_file)
             
             # Evaluate Model
             
 #             [pred_answers, gold_answers] = load_predictions(run_val_file, val_ids_equiv_file, val_questions_file) # before
             [pred_answers, gold_answers] = load_predictions(run_val_file, gold_answer_qrels_file)
-            [pred_t_answers, gold_t_answers] = load_predictions(run_test_file, gold_answer_qrels_test_file)
+#             [pred_t_answers, gold_t_answers] = load_predictions(run_test_file, gold_answer_qrels_test_file)
             
             val_acc = evaluate(pred_answers, gold_answers)
-            test_acc = evaluate(pred_t_answers, gold_t_answers)
+#             test_acc = evaluate(pred_t_answers, gold_t_answers)
 
             
-            print('Metric val: ', val_acc, '\n', 'Metric test: ', test_acc)
+#             print('Metric val: ', val_acc, '\n', 'Metric test: ', test_acc)
+            print('Metric val: ', val_acc, '\n')
             
             #import IPython; IPython.embed()
             return ({
                     'metric': val_acc,
                     'info': { 'label': 'Accuracy based, LambdaMART optimized based on P@1',
                              'model_file':  save_model_file,
-                             'test_results': test_acc
+#                              'test_results': test_acc
                         }
             })
 
@@ -275,9 +276,14 @@ class HpoWorker(Worker):
             cv_mean_metric = round(np.mean([value['metric'] for key,value in cv_results_dict.items()]), 8)
             cv_std_metric = round(np.std([value['metric'] for key,value in cv_results_dict.items()]), 8)
             
+#             cv_mean_metric_test = round(np.mean([float(value['info']['test_results']) for key,value in cv_results_dict.items()]), 8)
+#             cv_std_metric_test = round(np.std( [float(value['info']['test_results']) for key,value in cv_results_dict.items()]), 8)
+            
             cv_results_dict['mean_metric'] = cv_mean_metric
             cv_results_dict['std_metric'] = cv_std_metric
             
+#             cv_results_dict['mean_metric_test'] = cv_mean_metric_test
+#             cv_results_dict['std_metric_test'] = cv_std_metric_test
             
             return ({
                 'loss': 1 - cv_mean_metric, # remember: HpBandSter always minimizes!
@@ -295,15 +301,15 @@ class HpoWorker(Worker):
             """
             cs = CS.ConfigurationSpace()
             
-            # This is the one!
-            n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=5, upper=100, default_value=10, q=5, log=False)
-            learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.01, upper=0.5, default_value=0.1, q=0.01, log=False)
-            n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=100, upper=2000, default_value=1000, q=50 ,log=False)
+#             # This is the one!
+#             n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=5, upper=100, default_value=10, q=5, log=False)
+#             learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.01, upper=0.5, default_value=0.1, q=0.01, log=False)
+#             n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=100, upper=2000, default_value=1000, q=50 ,log=False)
             
             
-#             n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=1, upper=2, default_value=1, log=False)
-#             learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.1, upper=0.2, default_value=0.1, q=0.1, log=False)
-#             n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=1, upper=2, default_value=1, q=1, log=False)
+            n_leaves = CSH.UniformIntegerHyperparameter('n_leaves', lower=1, upper=2, default_value=1, log=False)
+            learning_rate = CSH.UniformFloatHyperparameter('learning_rate', lower=0.1, upper=0.2, default_value=0.1, q=0.1, log=False)
+            n_trees = CSH.UniformIntegerHyperparameter('n_trees', lower=1, upper=2, default_value=1, q=1, log=False)
 
             if default_config:
                 n_leaves = CSH.OrdinalHyperparameter('n_leaves', sequence=[10])
