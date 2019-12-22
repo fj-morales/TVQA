@@ -15,7 +15,7 @@ To replicate he effectiveness results for TVQA S+Q, please, follow the [[running
 `conda env create -f environment.yml`
 
 **Step 2**: Split original train dataset into new train, new validation (keep original validation dataset as "test", because test labels are not available)
-        `split_data.py`
+ `split_data.py`
 
 **Step 3**: Preprocessing corpus and queries
 
@@ -40,6 +40,7 @@ To replicate he effectiveness results for TVQA S+Q, please, follow the [[running
 **Step 8**: LambdaMART wint HPO: RS and BOHB
 
   `hpo=rs; python3 ir_hpo.py --hpo_method $hpo --min_budget 100 --max_budget 100 --n_iterations 200 --n_workers 1`
+  
   `hpo=bohb; python3 ir_hpo.py --hpo_method $hpo --min_budget 30 --max_budget 100 --n_iterations 200 --n_workers 1`
 
 **Step 9**: LambdaMART testing model:
