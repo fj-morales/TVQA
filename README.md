@@ -17,7 +17,8 @@ To replicate he effectiveness results for TVQA S+Q, please, follow the [[running
 `conda activate tvqa-gpu-py27`
 
 **Step 2**: Split original train dataset into new train, new validation (keep original validation dataset as "test", because test labels are not available)
- `split_data.py`
+
+`split_data.py`
 
 **Step 3**: Preprocessing corpus and queries
 
